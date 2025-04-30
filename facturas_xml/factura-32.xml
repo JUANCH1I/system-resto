@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<factura id="comprobante" version="1.1.0">
+  <infoTributaria>
+    <razonSocial>MANFREDI MARIANO DAMIAN CHAMUYO</razonSocial>
+    <nombreComercial/>
+    <ruc>1793167799001</ruc>
+    <claveAcceso>254202501099999999900110010010000000341234567810</claveAcceso>
+    <codDoc>01</codDoc>
+    <estab>001</estab>
+    <ptoEmi>001</ptoEmi>
+    <secuencial>000000034</secuencial>
+    <dirMatriz>ALFREDO BAQUERIZO N° E7-86 DIEGO DE ALMAGRO</dirMatriz>
+  </infoTributaria>
+  <infoFactura>
+    <fechaEmision>25/4/2025</fechaEmision>
+    <dirEstablecimiento>Sucursal Centro</dirEstablecimiento>
+    <obligadoContabilidad>NO</obligadoContabilidad>
+    <tipoIdentificacionComprador>05</tipoIdentificacionComprador>
+    <razonSocialComprador>Consumidor Final</razonSocialComprador>
+    <identificacionComprador>9999999999999</identificacionComprador>
+    <totalSinImpuestos>42</totalSinImpuestos>
+    <totalDescuento>000</totalDescuento>
+    <totalConImpuestos>
+      <totalImpuesto>
+        <codigo>2</codigo>
+        <codigoPorcentaje>2</codigoPorcentaje>
+        <baseImponible>42</baseImponible>
+        <valor>6.3</valor>
+      </totalImpuesto>
+    </totalConImpuestos>
+    <propina>0</propina>
+    <importeTotal>53.129999999999995</importeTotal>
+    <moneda>DOLAR</moneda>
+    <pagos>
+      <pago>
+        <formaPago>01</formaPago>
+        <total>53.129999999999995</total>
+        <plazo>0</plazo>
+        <tiempo>Días</tiempo>
+      </pago>
+    </pagos>
+  </infoFactura>
+  <detalles>
+    <detalle>
+      <codigoPrincipal/>
+      <descripcion>COCA COLA</descripcion>
+      <cantidad>1</cantidad>
+      <precioUnitario>2</precioUnitario>
+      <descuento>0</descuento>
+      <precioTotalSinImpuesto>2</precioTotalSinImpuesto>
+      <impuestos>
+        <impuesto>
+          <codigo>2</codigo>
+          <codigoPorcentaje>2</codigoPorcentaje>
+          <tarifa>15</tarifa>
+          <baseImponible>2</baseImponible>
+          <valor>0.30</valor>
+        </impuesto>
+      </impuestos>
+    </detalle>
+    <detalle>
+      <codigoPrincipal/>
+      <descripcion>NAVARRO C. COLECCIÓN P. MALBEC</descripcion>
+      <cantidad>1</cantidad>
+      <precioUnitario>40</precioUnitario>
+      <descuento>0</descuento>
+      <precioTotalSinImpuesto>40</precioTotalSinImpuesto>
+      <impuestos>
+        <impuesto>
+          <codigo>2</codigo>
+          <codigoPorcentaje>2</codigoPorcentaje>
+          <tarifa>15</tarifa>
+          <baseImponible>40</baseImponible>
+          <valor>6.00</valor>
+        </impuesto>
+      </impuestos>
+    </detalle>
+  </detalles>
+  <firma>***FIRMA AQUÍ***</firma>
+<firma>***FIRMA AQUÍ***</firma></factura>

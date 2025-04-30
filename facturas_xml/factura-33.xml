@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<factura id="comprobante" version="1.1.0">
+  <infoTributaria>
+    <razonSocial>MANFREDI MARIANO DAMIAN CHAMUYO</razonSocial>
+    <nombreComercial>CHAMUYO</nombreComercial>
+    <ruc>1793167799001</ruc>
+    <claveAcceso>254202501099999999900110010010000000351234567816</claveAcceso>
+    <codDoc>01</codDoc>
+    <estab>001</estab>
+    <ptoEmi>001</ptoEmi>
+    <secuencial>000000035</secuencial>
+    <dirMatriz>ALFREDO BAQUERIZO N° E7-86 DIEGO DE ALMAGRO</dirMatriz>
+  </infoTributaria>
+  <infoFactura>
+    <fechaEmision>25/4/2025</fechaEmision>
+    <dirEstablecimiento/>
+    <obligadoContabilidad>NO</obligadoContabilidad>
+    <tipoIdentificacionComprador>05</tipoIdentificacionComprador>
+    <razonSocialComprador>Consumidor Final</razonSocialComprador>
+    <identificacionComprador>9999999999999</identificacionComprador>
+    <direccionComprador>S/N</direccionComprador>
+    <totalSinImpuestos>132</totalSinImpuestos>
+    <totalDescuento>0000</totalDescuento>
+    <totalConImpuestos>
+      <totalImpuesto>
+        <codigo>2</codigo>
+        <codigoPorcentaje>4</codigoPorcentaje>
+        <baseImponible>132</baseImponible>
+        <valor>19.8</valor>
+      </totalImpuesto>
+    </totalConImpuestos>
+    <propina>0</propina>
+    <importeTotal>166.98</importeTotal>
+    <moneda>DOLAR</moneda>
+    <pagos>
+      <pago>
+        <formaPago>01</formaPago>
+        <total>166.98</total>
+        <plazo>1</plazo>
+        <tiempo>Días</tiempo>
+      </pago>
+    </pagos>
+  </infoFactura>
+  <detalles>
+    <detalle>
+      <codigoPrincipal/>
+      <descripcion>COCA COLA</descripcion>
+      <cantidad>1</cantidad>
+      <precioUnitario>2</precioUnitario>
+      <descuento>0</descuento>
+      <precioTotalSinImpuesto>2</precioTotalSinImpuesto>
+      <impuestos>
+        <impuesto>
+          <codigo>2</codigo>
+          <codigoPorcentaje>4</codigoPorcentaje>
+          <tarifa>15</tarifa>
+          <baseImponible>2</baseImponible>
+          <valor>0.30</valor>
+        </impuesto>
+      </impuestos>
+    </detalle>
+    <detalle>
+      <codigoPrincipal/>
+      <descripcion>PARRILLA ARGENTA FULL</descripcion>
+      <cantidad>2</cantidad>
+      <precioUnitario>50</precioUnitario>
+      <descuento>0</descuento>
+      <precioTotalSinImpuesto>100</precioTotalSinImpuesto>
+      <impuestos>
+        <impuesto>
+          <codigo>2</codigo>
+          <codigoPorcentaje>4</codigoPorcentaje>
+          <tarifa>15</tarifa>
+          <baseImponible>100</baseImponible>
+          <valor>15.00</valor>
+        </impuesto>
+      </impuestos>
+    </detalle>
+    <detalle>
+      <codigoPrincipal/>
+      <descripcion>ASADO CLASICO</descripcion>
+      <cantidad>1</cantidad>
+      <precioUnitario>30</precioUnitario>
+      <descuento>0</descuento>
+      <precioTotalSinImpuesto>30</precioTotalSinImpuesto>
+      <impuestos>
+        <impuesto>
+          <codigo>2</codigo>
+          <codigoPorcentaje>4</codigoPorcentaje>
+          <tarifa>15</tarifa>
+          <baseImponible>30</baseImponible>
+          <valor>4.50</valor>
+        </impuesto>
+      </impuestos>
+    </detalle>
+  </detalles>
+  <firma>***FIRMA AQUÍ***</firma>
+<firma>***FIRMA AQUÍ***</firma></factura>

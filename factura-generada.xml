@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<factura id="comprobante" version="1.1.0">
+  <infoTributaria>
+    <razonSocial>CyberArmor S.A.</razonSocial>
+    <nombreComercial>CyberArmor</nombreComercial>
+    <ruc>1790010001001</ruc>
+    <claveAcceso>2204202501179001000100110010010000000011234567816</claveAcceso>
+    <codDoc>01</codDoc>
+    <estab>001</estab>
+    <ptoEmi>001</ptoEmi>
+    <secuencial>000000001</secuencial>
+    <dirMatriz>Av. Amazonas y Naciones Unidas</dirMatriz>
+  </infoTributaria>
+  <infoFactura>
+    <fechaEmision>25/04/2025</fechaEmision>
+    <dirEstablecimiento>Av. Amazonas y Naciones Unidas</dirEstablecimiento>
+    <obligadoContabilidad>SI</obligadoContabilidad>
+    <tipoIdentificacionComprador>05</tipoIdentificacionComprador>
+    <razonSocialComprador>Juan Perez</razonSocialComprador>
+    <identificacionComprador>1717171717</identificacionComprador>
+    <direccionComprador>Quito - Ecuador</direccionComprador>
+    <totalSinImpuestos>100.00</totalSinImpuestos>
+    <totalDescuento>0.00</totalDescuento>
+    <totalConImpuestos>
+      <totalImpuesto>
+        <codigo>2</codigo>
+        <codigoPorcentaje>2</codigoPorcentaje>
+        <baseImponible>100.00</baseImponible>
+        <valor>12.00</valor>
+      </totalImpuesto>
+    </totalConImpuestos>
+    <propina>0.00</propina>
+    <importeTotal>112.00</importeTotal>
+    <moneda>DOLAR</moneda>
+    <pagos>
+      <pago>
+        <formaPago>01</formaPago>
+        <total>112.00</total>
+        <plazo/>
+        <tiempo/>
+      </pago>
+    </pagos>
+  </infoFactura>
+  <detalles>
+    <detalle>
+      <descripcion>Laptop Gamer</descripcion>
+      <cantidad>1</cantidad>
+      <precioUnitario>100.00</precioUnitario>
+      <descuento>0.00</descuento>
+      <precioTotalSinImpuesto>100.00</precioTotalSinImpuesto>
+      <impuestos>
+        <impuesto>
+          <codigo>2</codigo>
+          <codigoPorcentaje>2</codigoPorcentaje>
+          <tarifa>15</tarifa>
+          <baseImponible>100.00</baseImponible>
+          <valor>15.00</valor>
+        </impuesto>
+      </impuestos>
+    </detalle>
+  </detalles>
+<firma>***FIRMA AQUÍ***</firma></factura>

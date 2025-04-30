@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<factura id="comprobante" version="1.1.0">
+  <infoTributaria>
+    <ambiente>1</ambiente>
+    <tipoEmision>1</tipoEmision>
+    <razonSocial>MANFREDI MARIANO DAMIAN CHAMUYO</razonSocial>
+    <nombreComercial>CHAMUYO</nombreComercial>
+    <ruc>1793167799001</ruc>
+    <claveAcceso>2804202501179316779900110010010000000565183261110</claveAcceso>
+    <codDoc>01</codDoc>
+    <estab>001</estab>
+    <ptoEmi>001</ptoEmi>
+    <secuencial>000000056</secuencial>
+    <dirMatriz>ALFREDO BAQUERIZO N° E7-86 DIEGO DE ALMAGRO</dirMatriz>
+  </infoTributaria>
+  <infoFactura>
+    <fechaEmision>28/04/2025</fechaEmision>
+    <obligadoContabilidad>NO</obligadoContabilidad>
+    <tipoIdentificacionComprador>05</tipoIdentificacionComprador>
+    <razonSocialComprador>Juan Manfredi</razonSocialComprador>
+    <identificacionComprador>1762594347</identificacionComprador>
+    <direccionComprador>quito</direccionComprador>
+    <totalSinImpuestos>52.5</totalSinImpuestos>
+    <totalDescuento>000</totalDescuento>
+    <totalConImpuestos>
+      <totalImpuesto>
+        <codigo>2</codigo>
+        <codigoPorcentaje>4</codigoPorcentaje>
+        <baseImponible>52.5</baseImponible>
+        <valor>7.88</valor>
+      </totalImpuesto>
+    </totalConImpuestos>
+    <propina>0</propina>
+    <importeTotal>66.41</importeTotal>
+    <moneda>DOLAR</moneda>
+    <pagos>
+      <pago>
+        <formaPago>01</formaPago>
+        <total>66.41</total>
+        <plazo>1</plazo>
+        <unidadTiempo>Días</unidadTiempo>
+      </pago>
+    </pagos>
+  </infoFactura>
+  <detalles>
+    <detalle>
+      <codigoPrincipal/>
+      <descripcion>PARRILLA ARGENTA FULL</descripcion>
+      <cantidad>1</cantidad>
+      <precioUnitario>50</precioUnitario>
+      <descuento>0</descuento>
+      <precioTotalSinImpuesto>50</precioTotalSinImpuesto>
+      <impuestos>
+        <impuesto>
+          <codigo>2</codigo>
+          <codigoPorcentaje>4</codigoPorcentaje>
+          <tarifa>15</tarifa>
+          <baseImponible>50</baseImponible>
+          <valor>7.50</valor>
+        </impuesto>
+      </impuestos>
+    </detalle>
+    <detalle>
+      <codigoPrincipal/>
+      <descripcion>EMP. JAMON Y MOZZARELLA</descripcion>
+      <cantidad>1</cantidad>
+      <precioUnitario>2.5</precioUnitario>
+      <descuento>0</descuento>
+      <precioTotalSinImpuesto>2.5</precioTotalSinImpuesto>
+      <impuestos>
+        <impuesto>
+          <codigo>2</codigo>
+          <codigoPorcentaje>4</codigoPorcentaje>
+          <tarifa>15</tarifa>
+          <baseImponible>2.5</baseImponible>
+          <valor>0.38</valor>
+        </impuesto>
+      </impuestos>
+    </detalle>
+  </detalles>
+<Signature xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/><Reference URI="#comprobante"><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/><Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/></Transforms><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><DigestValue>d92qSU3p8BMNQcdeKz75P2X3EMI=</DigestValue></Reference></SignedInfo><SignatureValue>QkLIVF4IkPXmZiTP4d7DM2KDGMeA15Akqmpp9KJSTKmouItOSUpG333DND31ibMWpfONWEyh8g5YMZQqPgm0e+gRsQ82yL+tikU9ClRDSm8m1jicGeDZmrB3ux5R/ZVialEI6pBjMS6qXEDYe4b7g11HWETXNsQTxMXGUBWdI9WAJkyLZIrkdcTLQqMiIKv2mg6nmyi5qHdEotmTpMELlaI+wantOqb4PPz0fS16JgaP21a2rcjSnnQg0odhthzlWoo2SRnRT442RrCBuf0Fvc6h8U79/7UNAomOmE2e650W+PJIujxYP0dXSrxZkTt+hX3L9G+kggre7c3R/3AdlQ==</SignatureValue></Signature></factura>

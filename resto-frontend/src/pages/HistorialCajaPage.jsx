@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import axios from "axios"
-import { colors } from "@material-ui/core"
 
 export default function HistorialCajasPage() {
   const [historial, setHistorial] = useState([])

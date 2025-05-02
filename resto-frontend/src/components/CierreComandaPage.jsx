@@ -194,7 +194,7 @@ export default function CierreComandaPage() {
         fecha: new Date().toLocaleDateString('es-EC'),
         tipoComprobante: '01',
         ruc: '1793167799001', // tu RUC real
-        ambiente: '2', // pruebas
+        ambiente: '1', // pruebas
         estab: '001',
         ptoEmi: '001',
         secuencial: comanda.id.toString().padStart(9, '0'),
@@ -209,12 +209,11 @@ export default function CierreComandaPage() {
       // 🧩 Datos para construir la factura
       const datosFactura = {
         emisor: {
-          ambiente: '2', // pruebas
+          ambiente: '1', // pruebas
           tipoEmision: '1',
           razonSocial: 'MANFREDI MARIANO DAMIAN CHAMUYO',
           nombreComercial: 'CHAMUYO',
           ruc: '1793167799001',
-          claveAcceso,
           direccionMatriz: 'ALFREDO BAQUERIZO N° E7-86 DIEGO DE ALMAGRO',
         },
         cliente: {
@@ -224,7 +223,6 @@ export default function CierreComandaPage() {
           direccion: cliente.direccion,
         },
         valores: {
-          secuencial: comanda.id.toString().padStart(9, '0'),
           fechaEmision: (() => {
             const fecha = new Date()
             const dia = fecha.getDate().toString().padStart(2, '0')

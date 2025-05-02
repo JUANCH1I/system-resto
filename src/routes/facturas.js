@@ -8,6 +8,29 @@ import fs from 'fs'
 
 const facturasRouter = express.Router()
 
+async function obtenerProximoSecuencial(client, ambiente, estab, ptoEmi) {
+  const res = await client.query(
+    `SELECT ultimo_secuencial FROM secuenciales WHERE ambiente = $1 AND establecimiento = $2 AND punto_emision = $3`,
+    [ambiente, estab, ptoEmi]
+  )
+
+  let nuevoSecuencial = 1
+  if (res.rowCount > 0) {
+    nuevoSecuencial = res.rows[0].ultimo_secuencial + 1
+    await client.query(
+      `UPDATE secuenciales SET ultimo_secuencial = $1 WHERE ambiente = $2 AND establecimiento = $3 AND punto_emision = $4`,
+      [nuevoSecuencial, ambiente, estab, ptoEmi]
+    )
+  } else {
+    await client.query(
+      `INSERT INTO secuenciales (ambiente, establecimiento, punto_emision, ultimo_secuencial) VALUES ($1, $2, $3, $4)`,
+      [ambiente, estab, ptoEmi, nuevoSecuencial]
+    )
+  }
+
+  return nuevoSecuencial
+}
+
 facturasRouter.post('/', async (req, res) => {
   const {
     comanda_id,
@@ -19,7 +42,7 @@ facturasRouter.post('/', async (req, res) => {
     total,
     metodo_pago,
     caja_id,
-    datosFactura, // Agregamos datosFactura para construir el XML
+    datosFactura,
   } = req.body
 
   const client = await pool.connect()
@@ -27,12 +50,52 @@ facturasRouter.post('/', async (req, res) => {
   try {
     await client.query('BEGIN')
 
-    const result = await client.query(
+    // 1. Generar factura XML firmada
+    const facturaXmlFirmada = await generarFactura(datosFactura)
+
+    // 2. Guardar XML temporalmente (opcional)
+    const tempPath = path.join(
+      process.cwd(),
+      'facturas_xml',
+      `temp-${Date.now()}.xml`
+    )
+    fs.writeFileSync(tempPath, facturaXmlFirmada, 'utf-8')
+
+    // 3. Enviar a SRI (recepción)
+    const respuestaSri = await enviarComprobanteRecepcion(facturaXmlFirmada)
+    console.log('respuestaSri:', respuestaSri.estado)
+
+    if (respuestaSri.estado !== 'RECIBIDA') {
+      console.error(
+        '❌ Error en recepción:',
+        JSON.stringify(respuestaSri.raw, null, 2)
+      )
+      throw new Error(
+        'El SRI no aceptó la factura (estado diferente a RECIBIDA)'
+      )
+    }
+
+    // 4. Autorizar comprobante
+    const resultadoAutorizacion = await autorizarComprobante(
+      datosFactura.emisor.claveAcceso
+    )
+    console.log('Autorización:', resultadoAutorizacion.estado)
+
+    // 5. Insertar en la base de datos solo si pasó la validación
+    const estadoFinal =
+      resultadoAutorizacion.estado === 'AUTORIZADO'
+        ? 'autorizado'
+        : 'no_autorizado'
+
+    const insertResult = await client.query(
       `
-      INSERT INTO facturas (
-        comanda_id, cliente_id, subtotal, iva, servicio, propina, total, metodo_pago, caja_id, estado_sri
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8, $9,'pendiente') RETURNING *
-    `,
+        INSERT INTO facturas (
+          comanda_id, cliente_id, subtotal, iva, servicio, propina, total,
+          metodo_pago, caja_id, estado_sri, clave_acceso, auth
+        )
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+        RETURNING *
+      `,
       [
         comanda_id,
         cliente_id,
@@ -43,16 +106,15 @@ facturasRouter.post('/', async (req, res) => {
         total,
         metodo_pago,
         caja_id,
+        estadoFinal,
+        resultadoAutorizacion.claveAccesoConsultada,
+        resultadoAutorizacion.numeroAutorizacion,
       ]
     )
 
-    const facturaDb = result.rows[0]
+    const facturaDb = insertResult.rows[0]
 
-    console.log('datosFactura', datosFactura)
-    // 🔥 Nueva parte: generar XML de la factura
-    const facturaXmlFirmada = await generarFactura(datosFactura)
-
-    // 🔥 Opcional: guardar el XML en disco temporalmente
+    // 6. Guardar XML firmado definitivo con ID
     const outputPath = path.join(
       process.cwd(),
       'facturas_xml',
@@ -60,59 +122,26 @@ facturasRouter.post('/', async (req, res) => {
     )
     fs.writeFileSync(outputPath, facturaXmlFirmada, 'utf-8')
 
-    // 🔥 Más adelante: enviar al SRI desde aquí
-    const respuestaSri = await enviarComprobanteRecepcion(facturaXmlFirmada)
-    console.log('respuestaSri', respuestaSri)
-    console.log(
-      JSON.stringify(respuestaSri.raw['soap:Envelope']['soap:Body'], null, 2)
-    )
-
-    if (respuestaSri.estado === 'RECIBIDA') {
-      console.log('✅ Factura recibida en el SRI')
-
-      // Ahora intentar autorizar
-      const resultadoAutorizacion = await autorizarComprobante(
-        datosFactura.emisor.claveAcceso
-      )
-      console.log(JSON.stringify(resultadoAutorizacion, null, 2))
-
-      if (resultadoAutorizacion.estado === 'AUTORIZADO') {
-        console.log('✅ Factura AUTORIZADA')
-
-        await client.query(
-          `UPDATE facturas SET estado_sri = 'autorizado' WHERE id = $1`,
-          [facturaDb.id]
-        )
-      } else {
-        console.log('❌ Factura NO AUTORIZADA')
-
-        await client.query(
-          `UPDATE facturas SET estado_sri = 'no_autorizado' WHERE id = $1`,
-          [facturaDb.id]
-        )
-      }
-    }
-
-    // 🔥 Marcar comanda y mesa
+    // 7. Marcar comanda como cerrada
     await client.query(`UPDATE comandas SET estado = 'cerrada' WHERE id = $1`, [
       comanda_id,
     ])
 
+    // 8. Liberar mesa
     await client.query(
       `
-      UPDATE mesas 
-      SET estado = 'libre', orden_actual_id = NULL
-      WHERE id = (SELECT mesa_id FROM comandas WHERE id = $1)
-    `,
+        UPDATE mesas 
+        SET estado = 'libre', orden_actual_id = NULL
+        WHERE id = (SELECT mesa_id FROM comandas WHERE id = $1)
+      `,
       [comanda_id]
     )
 
     await client.query('COMMIT')
-
     res.status(201).json({ factura_id: facturaDb.id })
   } catch (error) {
     await client.query('ROLLBACK')
-    console.error('Error al crear factura:', error)
+    console.error('❌ Error al crear factura:', error)
     res.status(500).json({ error: 'Error al crear factura' })
   } finally {
     client.release()

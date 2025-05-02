@@ -1,6 +1,6 @@
 import { construirFactura } from './facturaBuilder.js'
 import { generarFacturaXml } from './generarFacturaXml.js'
-import { signXml } from './firmadorSri.js'
+import { firmarFactura } from './firmadorSri.js'
 import fs from 'fs' // Agregado para poder guardar el archivo
 import path from 'path'
 
@@ -13,14 +13,17 @@ export async function generarFactura(datosFactura) {
     // 2. Convertir el objeto en XML
     const facturaXml = generarFacturaXml(facturaObjeto)
 
-    // 3. Firmar el XML (por ahora en modo Mock)
-    const xmlFirmado = await firmarXml(
-      path.resolve('src/sri/certificados/1013252787118662625022153733.p12'), // tu ruta real
-      facturaXml,
-      process.env.PASSWORD_SIGNATURE
-    )
+    const facturaSinFirmarPath = path.resolve('./factura-sin-firmar.xml')
+    fs.writeFileSync(facturaSinFirmarPath, facturaXml, 'utf-8')
 
-    // 4. Devolver el XML firmado
+    // 3. Firmar XML
+    const xmlFirmado = await firmarFactura(facturaSinFirmarPath)
+
+    // 4. Guardar el XML firmado
+    const outputPath = path.resolve('./factura-firmada.xml')
+    fs.writeFileSync(outputPath, xmlFirmado, { encoding: 'utf8' })
+
+    console.log('✅ XML firmado correctamente:', outputPath)
     return xmlFirmado
   } catch (error) {
     console.error('Error al generar la factura:', error)

@@ -15,7 +15,7 @@ export async function autorizarComprobante(claveAcceso) {
     `
 
     const response = await axios.post(
-      process.env.URL_PRODUCCION_AUTORIZACION,
+      process.env.URL_PRUEBA_AUTORIZACION,
       soapBody,
       {
         headers: {
@@ -32,13 +32,19 @@ export async function autorizarComprobante(claveAcceso) {
         'ns2:autorizacionComprobanteResponse'
       ]?.[0]?.['RespuestaAutorizacionComprobante']?.[0]
 
-    if (!respuesta?.autorizaciones?.[0]?.autorizacion?.[0]) {
-      throw new Error(
-        'No se encontró una autorización en la respuesta del SRI.'
-      )
+    const autorizacion = respuesta?.autorizaciones?.[0]?.autorizacion?.[0]
+
+    if (!autorizacion) {
+      return {
+        estado: 'NO AUTORIZADO',
+        numeroAutorizacion: null,
+        fechaAutorizacion: null,
+        xmlAutorizado: null,
+        raw: parsed,
+      }
     }
 
-    const autorizacion = respuesta.autorizaciones[0].autorizacion[0]
+    const estado = autorizacion.estado?.[0]
 
     return {
       estado: autorizacion.estado?.[0] || null, // AUTORIZADO o NO AUTORIZADO

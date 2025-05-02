@@ -15,7 +15,7 @@ export async function enviarComprobanteRecepcion(xmlFirmado) {
   `
 
     const response = await axios.post(
-      process.env.URL_PRODUCCION_RECEPCION,
+      process.env.URL_PRUEBA_RECEPCION,
       soapEnvelope,
       {
         headers: {

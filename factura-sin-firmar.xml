@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<factura id="comprobante" version="2.1.0">
+  <infoTributaria>
+    <ambiente>1</ambiente>
+    <tipoEmision>1</tipoEmision>
+    <razonSocial>MANFREDI MARIANO DAMIAN CHAMUYO</razonSocial>
+    <nombreComercial>CHAMUYO</nombreComercial>
+    <ruc>1793167799001</ruc>
+    <claveAcceso>0105202501179316779900110010010000000928519283714</claveAcceso>
+    <codDoc>01</codDoc>
+    <estab>001</estab>
+    <ptoEmi>001</ptoEmi>
+    <secuencial>000000092</secuencial>
+    <dirMatriz>ALFREDO BAQUERIZO N° E7-86 DIEGO DE ALMAGRO</dirMatriz>
+  </infoTributaria>
+  <infoFactura>
+    <fechaEmision>01/05/2025</fechaEmision>
+    <obligadoContabilidad>NO</obligadoContabilidad>
+    <tipoIdentificacionComprador>07</tipoIdentificacionComprador>
+    <razonSocialComprador>Consumidor Final</razonSocialComprador>
+    <identificacionComprador>9999999999999</identificacionComprador>
+    <direccionComprador>S/N</direccionComprador>
+    <totalSinImpuestos>2.5</totalSinImpuestos>
+    <totalDescuento>00</totalDescuento>
+    <totalConImpuestos>
+      <totalImpuesto>
+        <codigo>2</codigo>
+        <codigoPorcentaje>4</codigoPorcentaje>
+        <baseImponible>2.5</baseImponible>
+        <valor>0.38</valor>
+      </totalImpuesto>
+    </totalConImpuestos>
+    <propina>0</propina>
+    <importeTotal>3.16</importeTotal>
+    <moneda>DOLAR</moneda>
+    <pagos>
+      <pago>
+        <formaPago>01</formaPago>
+        <total>3.16</total>
+        <plazo>1</plazo>
+        <unidadTiempo>Días</unidadTiempo>
+      </pago>
+    </pagos>
+  </infoFactura>
+  <detalles>
+    <detalle>
+      <codigoPrincipal>PROD-0009</codigoPrincipal>
+      <descripcion>EMP. JAMON Y MOZZARELLA</descripcion>
+      <cantidad>1</cantidad>
+      <precioUnitario>2.5</precioUnitario>
+      <descuento>0</descuento>
+      <precioTotalSinImpuesto>2.5</precioTotalSinImpuesto>
+      <impuestos>
+        <impuesto>
+          <codigo>2</codigo>
+          <codigoPorcentaje>4</codigoPorcentaje>
+          <tarifa>15</tarifa>
+          <baseImponible>2.5</baseImponible>
+          <valor>0.38</valor>
+        </impuesto>
+      </impuestos>
+    </detalle>
+  </detalles>
+</factura>

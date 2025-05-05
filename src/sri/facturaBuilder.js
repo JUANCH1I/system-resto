@@ -1,5 +1,4 @@
 export function construirFactura(datos) {
-  console.log('datosFacturaConstructor', datos)
   return {
     ambiente: datos.emisor.ambiente || '',
     tipoEmision: datos.emisor.tipoEmision || '',

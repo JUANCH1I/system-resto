@@ -1,8 +1,6 @@
 import { create } from 'xmlbuilder2'
 
 export function generarFacturaXml(factura) {
-  console.log(factura)
-
   const doc = create({ version: '1.0', encoding: 'UTF-8' }).ele('factura', {
     id: 'comprobante',
     version: '2.1.0',

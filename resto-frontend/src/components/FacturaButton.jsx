@@ -1,6 +1,6 @@
-'use client'
+"use client"
 
-export  function FacturaButton({
+export default function FacturaButton({
   comanda,
   productos,
   subtotal,
@@ -12,257 +12,309 @@ export  function FacturaButton({
   metodoPago,
 }) {
   const imprimirFactura = () => {
-    console.log(
-      comanda,
-      productos,
-      subtotal,
-      iva,
-      servicio,
-      propina,
-      total,
-      cliente,
-      metodoPago
-    )
-    const ventana = window.open('', '', 'width=400,height=700')
+    // Generar número de factura con formato similar al de la imagen
+    const facturaNum = `00200100000${comanda.id}`.slice(-10)
+    const autorizacionSRI = `AUTORIZACION${comanda.id}45702501179316779900120020010000024`
+
+    // Formatear fecha actual en formato dd/mes/yyyy
+    const fechaActual = new Date()
+    const opciones = { day: "2-digit", month: "long", year: "numeric" }
+    const fechaFormateada = fechaActual.toLocaleDateString("es-ES", opciones).replace(" de ", "/").replace(" de ", "/")
+
+    const ventana = window.open("", "", "width=400,height=700")
     const html = `
       <!DOCTYPE html>
       <html>
         <head>
           <title>Factura Cliente</title>
+          <meta charset="UTF-8">
           <style>
-            body {
-              font-family: 'Helvetica', 'Arial', sans-serif;
-              padding: 20px;
-              max-width: 400px;
-              margin: 0 auto;
-              color: #333;
-              line-height: 1.5;
-            }
-            .factura-container {
-              border: 1px solid #ddd;
-              border-radius: 8px;
-              padding: 20px;
-              box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            }
-            .factura-header {
-              text-align: center;
-              margin-bottom: 20px;
-              padding-bottom: 15px;
-              border-bottom: 2px solid #f0f0f0;
-            }
-            .factura-header h2 {
+            @page {
               margin: 0;
-              color: #2c3e50;
-              font-size: 22px;
+              size: 80mm 297mm;
             }
-            .factura-header p {
-              margin: 5px 0 0;
-              color: #7f8c8d;
-              font-size: 14px;
+            body {
+              font-family: 'Courier New', monospace;
+              padding: 5mm;
+              max-width: 80mm;
+              margin: 0 auto;
+              color: #000;
+              line-height: 1.2;
+              font-size: 9pt;
             }
-            .factura-info {
+            .logo {
+              text-align: center;
+              margin-bottom: 5mm;
+            }
+            .logo img {
+              width: 20mm;
+              height: 20mm;
+              filter: grayscale(100%);
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 3mm;
+            }
+            .header p {
+              margin: 1mm 0;
+            }
+            .ruc {
+              font-weight: bold;
+              font-size: 10pt;
+            }
+            .info-row {
               display: flex;
               justify-content: space-between;
-              margin-bottom: 15px;
-              font-size: 14px;
+              margin-bottom: 1mm;
             }
-            .factura-info div {
-              flex: 1;
-            }
-            .factura-info strong {
-              color: #2c3e50;
-            }
-            .productos-table {
-              width: 100%;
-              border-collapse: collapse;
-              margin: 15px 0;
-            }
-            .productos-table th {
-              background-color: #f8f9fa;
-              padding: 8px;
+            .info-row .label {
+              font-weight: bold;
               text-align: left;
-              font-weight: 600;
-              color: #2c3e50;
-              font-size: 14px;
-              border-bottom: 2px solid #ddd;
+              width: 40%;
             }
-            .productos-table td {
-              padding: 8px;
-              border-bottom: 1px solid #eee;
-              font-size: 14px;
+            .info-row .value {
+              text-align: right;
+              width: 60%;
             }
-            .productos-table .comentario {
-              font-size: 12px;
-              color: #7f8c8d;
-              font-style: italic;
-              padding-top: 3px;
+            .productos {
+              width: 100%;
+              margin: 3mm 0;
+              border-collapse: collapse;
+              font-size: 8pt;
+            }
+            .productos th, .productos td {
+              text-align: left;
+              padding: 1mm 0;
+            }
+            .productos th {
+              border-bottom: 1px dotted #000;
+            }
+            .productos td.cantidad {
+              text-align: center;
+              width: 15%;
+            }
+            .productos td.precio, .productos td.total {
+              text-align: right;
+              width: 20%;
+            }
+            .productos td.descripcion {
+              width: 45%;
             }
             .totales {
-              margin-top: 20px;
-              border-top: 2px solid #f0f0f0;
-              padding-top: 15px;
+              margin-top: 3mm;
+              text-align: right;
             }
-            .totales-item {
-              display: flex;
-              justify-content: space-between;
-              margin-bottom: 8px;
-              font-size: 14px;
+            .totales p {
+              margin: 1mm 0;
             }
             .total-final {
-              font-size: 18px;
               font-weight: bold;
-              color: #2c3e50;
-              margin-top: 10px;
-              padding-top: 10px;
-              border-top: 2px solid #f0f0f0;
-              display: flex;
-              justify-content: space-between;
-            }
-            .cliente-info {
-              margin-top: 20px;
-              padding: 15px;
-              background-color: #f8f9fa;
-              border-radius: 6px;
-              font-size: 14px;
-            }
-            .cliente-info p {
-              margin: 5px 0;
+              font-size: 10pt;
             }
             .disclaimer {
-              margin-top: 30px;
-              padding: 10px;
-              background-color: #fff8f8;
-              border: 1px solid #f5c6cb;
-              border-radius: 6px;
-              color: #721c24;
+              margin-top: 5mm;
               text-align: center;
-              font-size: 12px;
+              font-size: 8pt;
             }
             .footer {
-              margin-top: 30px;
+              margin-top: 5mm;
               text-align: center;
-              font-size: 12px;
-              color: #7f8c8d;
+              font-size: 8pt;
+            }
+            .linea {
+              border-top: 1px solid #000;
+              margin: 5mm 0;
             }
             @media print {
               body {
                 padding: 0;
-              }
-              .factura-container {
-                border: none;
-                box-shadow: none;
-              }
-              .disclaimer {
-                border: 1px dashed #721c24;
+                width: 80mm;
               }
             }
           </style>
         </head>
         <body>
-          <div class="factura-container">
-            <div class="factura-header">
-              <h2>FACTURA</h2>
-              <p>Restaurante Chamuyo</p>
-            </div>
-            
-            <div class="factura-info">
-              <div>
-                <p><strong>Mesa:</strong> ${comanda.mesa_id}</p>
-                <p><strong>Comanda:</strong> #${comanda.id}</p>
-              </div>
-              <div style="text-align: right;">
-                <p><strong>Fecha:</strong> ${new Date().toLocaleDateString()}</p>
-                <p><strong>Hora:</strong> ${new Date().toLocaleTimeString()}</p>
-              </div>
-            </div>
-            
-            <table class="productos-table">
-              <thead>
-                <tr>
-                  <th>Producto</th>
-                  <th>Cant.</th>
-                  <th style="text-align: right;">Precio</th>
-                  <th style="text-align: right;">Subtotal</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${productos
-                  .map(
-                    (p) => `
-                  <tr>
-                    <td>
-                      ${p.nombre}
-                      ${
-                        p.comentario
-                          ? `<div class="comentario">${p.comentario}</div>`
-                          : ''
-                      }
-                    </td>
-                    <td>${p.cantidad}</td>
-                    <td style="text-align: right;">$${p.precio_unitario}</td>
-                    <td style="text-align: right;">$${(
-                      p.precio_unitario * p.cantidad
-                    ).toFixed(2)}</td>
-                  </tr>
-                `
-                  )
-                  .join('')}
-              </tbody>
-            </table>
-            
-            <div class="totales">
-              <div class="totales-item">
-                <span>Subtotal:</span>
-                <span>$${subtotal.toFixed(2)}</span>
-              </div>
-              <div class="totales-item">
-                <span>IVA (15%):</span>
-                <span>$${iva.toFixed(2)}</span>
-              </div>
-              <div class="totales-item">
-                <span>Servicio (10%):</span>
-                <span>$${servicio.toFixed(2)}</span>
-              </div>
-              <div class="totales-item">
-                <span>Propina:</span>
-                <span>$${Number.parseFloat(propina).toFixed(2)}</span>
-              </div>
-              <div class="total-final">
-                <span>TOTAL:</span>
-                <span>$${total.toFixed(2)}</span>
-              </div>
-            </div>
-            
-            <div class="cliente-info">
-              <p><strong>Cliente:</strong> ${
-                cliente.tipo === 'con_datos'
-                  ? `${cliente.nombre} (${cliente.cedula_ruc})`
-                  : 'Consumidor final'
-              }</p>
-              <p><strong>Método de pago:</strong> ${metodoPago.join(', ')}</p>
-            </div>
-            
-            <div class="disclaimer">
-              <strong>Este documento no tiene validez tributaria</strong>
-            </div>
-            
-            <div class="footer">
-              <p>¡Gracias por su visita!</p>
-              <p>Esperamos verle pronto nuevamente</p>
-            </div>
+          <div class="logo">
+            <!-- Imagen circular con silueta de copas y botella -->
+            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202025-05-04%20at%208.08.10%20PM-gVV7F6HkpW2o7wcPdgThgWa3dkl1ou.jpeg" alt="Logo Chamuyo" onerror="this.style.display='none'">
           </div>
+          
+          <div class="header">
+            <p class="ruc">1793167799001</p>
+            <p>CHAMUYO 002</p>
+            <p>AV. TOLEDO N24-345 FRANCISCO SALAZAR</p>
+            <p>Telf: 0998614132</p>
+          </div>
+          
+          <div class="info-row">
+            <span class="label">N° FACTURA:</span>
+            <span class="value">${facturaNum}</span>
+          </div>
+          
+          <div class="info-row">
+            <span class="label">AUTORIZACIÓN:</span>
+            <span class="value">${autorizacionSRI.substring(0, 20)}...</span>
+          </div>
+          
+          <div class="info-row">
+            <span class="label">DEL SRI:</span>
+            <span class="value"></span>
+          </div>
+          
+          <div class="info-row">
+            <span class="label">FECHA DE VENTA:</span>
+            <span class="value">${fechaFormateada}</span>
+          </div>
+          
+          ${
+            cliente.tipo === "con_datos"
+              ? `
+          <div class="info-row">
+            <span class="label">CLIENTE:</span>
+            <span class="value">${cliente.nombre}</span>
+          </div>
+          
+          <div class="info-row">
+            <span class="label">RUC/CI:</span>
+            <span class="value">${cliente.cedula_ruc}</span>
+          </div>
+          
+          <div class="info-row">
+            <span class="label">DIRECCIÓN:</span>
+            <span class="value">${cliente.direccion || "-"}</span>
+          </div>
+          
+          <div class="info-row">
+            <span class="label">TELÉFONO:</span>
+            <span class="value">${cliente.telefono || "-"}</span>
+          </div>
+          
+          <div class="info-row">
+            <span class="label">EMAIL:</span>
+            <span class="value">${cliente.correo || "-"}</span>
+          </div>
+          `
+              : `
+          <div class="info-row">
+            <span class="label">CLIENTE:</span>
+            <span class="value">CONSUMIDOR FINAL</span>
+          </div>
+          `
+          }
+          
+          <table class="productos">
+            <thead>
+              <tr>
+                <th>Descripción</th>
+                <th>Cantidad</th>
+                <th>P.Unit.</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${productos
+                .map(
+                  (p) => `
+                <tr>
+                  <td class="descripcion">${p.nombre}</td>
+                  <td class="cantidad">${p.cantidad}</td>
+                  <td class="precio">${p.precio_unitario.toFixed(2)}</td>
+                  <td class="total">${(p.precio_unitario * p.cantidad).toFixed(2)}</td>
+                </tr>
+              `,
+                )
+                .join("")}
+            </tbody>
+          </table>
+          
+          <div class="totales">
+            <p>Descuento: 0.00</p>
+            <p>Subtotal 15%: ${subtotal.toFixed(2)}</p>
+            <p>Subtotal: ${subtotal.toFixed(2)}</p>
+            <p>Servicio 10%: ${servicio.toFixed(2)}</p>
+            <p>IVA 15%: ${iva.toFixed(2)}</p>
+            <p class="total-final">Total: ${total.toFixed(2)}</p>
+          </div>
+          
+          <div class="disclaimer">
+            Este documento no tiene ninguna validez tributaria.
+            Su factura electrónica llegará a su correo electrónico.
+            En caso de cualquier inquietud o reclamo contáctenos al correo electrónico:
+            info@samasatsa.com
+          </div>
+          
+          <div class="footer">
+            <p>Descargue su documento en:</p>
+            <p>https://facturacion.samasatsa.com</p>
+            <p>Usuario: ${cliente.tipo === "con_datos" ? cliente.cedula_ruc : "----------"}</p>
+            <p>Clave: ${cliente.tipo === "con_datos" ? cliente.cedula_ruc : "----------"}</p>
+          </div>
+          
+          <div class="linea"></div>
         </body>
       </html>
     `
-    ventana.document.open()
-    console.log('HTML generado:', html)
-    ventana.document.write(html)
 
+    ventana.document.write(html)
     ventana.document.close()
     ventana.focus()
+
+    // Pequeño retraso para asegurar que los estilos se carguen correctamente
     setTimeout(() => {
       ventana.print()
-      ventana.close()
+      // No cerramos automáticamente para permitir al usuario ver la vista previa
+      // ventana.close();
     }, 500)
   }
+
+  return (
+    <button
+      style={{
+        marginBottom: 12,
+        padding: "10px 20px",
+        border: "none",
+        background: "#007bff",
+        color: "white",
+        borderRadius: 6,
+        cursor: "pointer",
+        fontWeight: "500",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+        transition: "background-color 0.2s, transform 0.1s",
+      }}
+      onMouseOver={(e) => {
+        e.currentTarget.style.background = "#0069d9"
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.background = "#007bff"
+      }}
+      onMouseDown={(e) => {
+        e.currentTarget.style.transform = "translateY(1px)"
+      }}
+      onMouseUp={(e) => {
+        e.currentTarget.style.transform = "translateY(0)"
+      }}
+      onClick={imprimirFactura}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={{ marginRight: "8px" }}
+      >
+        <polyline points="6 9 6 2 18 2 18 9"></polyline>
+        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+        <rect x="6" y="14" width="12" height="8"></rect>
+      </svg>
+      Imprimir factura para cliente
+    </button>
+  )
 }

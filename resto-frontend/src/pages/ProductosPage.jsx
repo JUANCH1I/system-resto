@@ -107,7 +107,7 @@ export default function ProductosPage() {
       console.error('Error al guardar producto:', err)
       setError(
         err.message ||
-          'Error al guardar el producto. Por favor, intente nuevamente.'
+        'Error al guardar el producto. Por favor, intente nuevamente.'
       )
     } finally {
       setSubmitting(false)
@@ -122,7 +122,7 @@ export default function ProductosPage() {
       iva_incluido: producto.iva_incluido || false,
       categoria_id: producto.categoria_id || '',
       imagen: producto.imagen || '',
-      active: producto.active || true,
+      active: producto.active || false,
     })
     setEditandoId(producto.id)
     // Scroll al formulario
@@ -218,7 +218,7 @@ export default function ProductosPage() {
       right: "10px",
       boxShadow: "0 0 3px rgba(0,0,0,0.3)",
     },
-    
+
     label: {
       fontSize: '14px',
       marginBottom: '6px',
@@ -500,8 +500,7 @@ export default function ProductosPage() {
               </select>
             </div>
             <div style={styles.inputGroup}>
-              <label style={styles.label}>&nbsp;</label>
-              <label style={styles.checkboxGroup}>
+              <label style={styles.label}>&nbsp;
                 <input
                   type='checkbox'
                   style={styles.checkbox}
@@ -511,9 +510,10 @@ export default function ProductosPage() {
                   }
                 />
                 <span style={styles.checkboxLabelText}>Precio incluye IVA</span>
+              </label>
+              <label style={styles.label}>&nbsp;
                 <input
                   type='checkbox'
-                  name='active'
                   checked={form.active}
                   onChange={(e) =>
                     setForm({ ...form, active: e.target.checked })
@@ -545,8 +545,8 @@ export default function ProductosPage() {
               {submitting
                 ? 'Guardando...'
                 : editandoId
-                ? 'Actualizar Producto'
-                : 'Guardar Producto'}
+                  ? 'Actualizar Producto'
+                  : 'Guardar Producto'}
             </button>
           </div>
         </form>
@@ -633,7 +633,7 @@ export default function ProductosPage() {
                     >
                       Editar
                     </button>
-                  
+
                   </div>
                 </div>
               </div>

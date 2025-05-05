@@ -217,18 +217,48 @@ export default function ComandaPage() {
   })
 
   const calcularTotales = () => {
-    const subtotal = seleccionados.reduce((sum, p) => {
-      const precio = p.precio_unitario ?? p.precio
+    const tasaIva = 0.15
+  
+    let subtotal = 0
+    let totalIva = 0
+    let total = 0
+    let servicio = 0
+  
+    const detallesCalculados = seleccionados.map((p) => {
+      const precioConIva = p.precio_unitario ?? p.precio
+      const cantidad = Number(p.cantidad)
       const descuento = Number(p.descuento ?? 0)
-      return sum + (precio * p.cantidad - descuento)
-    }, 0)
   
-    const iva = subtotal * 0.15
-    const servicio = (subtotal + iva) * 0.1
-    const total = subtotal + iva + servicio 
+      const precioSinIva = +(precioConIva / (1 + tasaIva)).toFixed(4)
+      const baseImponible = +(precioSinIva * cantidad - descuento).toFixed(4)
+      const valorIva = +(baseImponible * tasaIva).toFixed(4)
   
-    return { subtotal, iva, servicio, total }
+      subtotal += baseImponible
+      totalIva += valorIva
+  
+      return {
+        ...p,
+        precioConIva,
+        precioSinIva,
+        baseImponible,
+        valorIva,
+        descuento,
+        cantidad,
+      }
+    })
+  
+    servicio = +(subtotal * 0.1).toFixed(2)
+    total = +(subtotal + totalIva + servicio).toFixed(2)
+  
+    return {
+      subtotal: +subtotal.toFixed(2),
+      iva: +totalIva.toFixed(2),
+      servicio,
+      total,
+      detalles: detallesCalculados,
+    }
   }
+  
   
 
   const calcularTotal = () => {
@@ -251,7 +281,7 @@ export default function ComandaPage() {
     setComentarioActivo(comentarioActivo === index ? null : index)
   }
 
-  const { total, subtotal, iva, servicio } = calcularTotales()
+  const { total, subtotal, iva, servicio, detalles } = calcularTotales()
 
 
   // Estilos

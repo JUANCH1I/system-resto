@@ -219,10 +219,6 @@ export default function PrefacturaButton({ comanda, productos, subtotal, iva, se
               </div>
             </div>
             
-            <div class="propina-sugerida">
-              <strong>Propina sugerida (10%):</strong> $${(total * 0.1).toFixed(2)}
-            </div>
-            
             <div class="datos-facturacion">
               <h3>Datos de facturación</h3>
               
@@ -240,12 +236,24 @@ export default function PrefacturaButton({ comanda, productos, subtotal, iva, se
                 <label>Correo electrónico:</label>
                 <div class="linea">&nbsp;</div>
               </div>
+
+              <div class="campo-datos">
+                <label>Dirección:</label>
+                <div class="linea">&nbsp;</div>
+              </div>
               
               <div class="campo-datos">
-                <label>Teléfono (opcional):</label>
+                <label>Teléfono:</label>
+                <div class="linea">&nbsp;</div>
+              </div>
+
+              <div class="campo-datos">
+                <label>Propina:</label>
                 <div class="linea">&nbsp;</div>
               </div>
             </div>
+
+              
             
             <div class="footer">
               <p>¡Gracias por su visita!</p>

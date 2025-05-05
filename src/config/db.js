@@ -5,5 +5,5 @@ dotenv.config()
 const { Pool } = pg
 
 export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL_DEVELOPMENT,
+  connectionString: process.env.DATABASE_URL_PRODUCTION,
 })

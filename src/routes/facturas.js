@@ -8,28 +8,59 @@ import fs from 'fs'
 
 const facturasRouter = express.Router()
 
-async function obtenerProximoSecuencial(client, ambiente, estab, ptoEmi) {
-  const res = await client.query(
-    `SELECT ultimo_secuencial FROM secuenciales WHERE ambiente = $1 AND establecimiento = $2 AND punto_emision = $3`,
-    [ambiente, estab, ptoEmi]
-  )
+function generarClaveAcceso({
+  fecha,
+  tipoComprobante = '01',
+  ruc,
+  ambiente = '1',
+  estab = '001',
+  ptoEmi = '001',
+  secuencial = '1',
+  codigoNumerico= Math.floor(Math.random() * 100000000).toString().padStart(8, '0'),
+  tipoEmision = '1',
+}) {
+  const fechaObj = new Date()
+  const dia = fechaObj.getDate().toString().padStart(2, '0')
+  const mes = (fechaObj.getMonth() + 1).toString().padStart(2, '0')
+  const anio = fechaObj.getFullYear()
+  console.log('fechaObj:', fechaObj)
+  const fechaStr = `${dia}${mes}${anio}`
 
-  let nuevoSecuencial = 1
-  if (res.rowCount > 0) {
-    nuevoSecuencial = res.rows[0].ultimo_secuencial + 1
-    await client.query(
-      `UPDATE secuenciales SET ultimo_secuencial = $1 WHERE ambiente = $2 AND establecimiento = $3 AND punto_emision = $4`,
-      [nuevoSecuencial, ambiente, estab, ptoEmi]
-    )
-  } else {
-    await client.query(
-      `INSERT INTO secuenciales (ambiente, establecimiento, punto_emision, ultimo_secuencial) VALUES ($1, $2, $3, $4)`,
-      [ambiente, estab, ptoEmi, nuevoSecuencial]
-    )
+  const serie = estab.padStart(3, '0') + ptoEmi.padStart(3, '0')
+  const secuencialStr = secuencial.toString().padStart(9, '0')
+  const codigoNumericoStr = codigoNumerico.toString().padStart(8, '0')
+
+  const base = `${fechaStr}${tipoComprobante}${ruc}${ambiente}${serie}${secuencialStr}${codigoNumericoStr}${tipoEmision}`
+  if (base.length !== 48) {
+    throw new Error(`Clave base incorrecta: tiene ${base.length} caracteres`)
+  }
+  const digitoVerificador = calcularModulo11(base)
+  console.log('digitoVerificador', digitoVerificador)
+
+  return base + digitoVerificador
+}
+
+function calcularModulo11(numero) {
+  const pesos = [2, 3, 4, 5, 6, 7]
+  let suma = 0
+  let pesoIndex = 0
+
+  for (let i = numero.length - 1; i >= 0; i--) {
+    suma += parseInt(numero[i], 10) * pesos[pesoIndex]
+    pesoIndex = (pesoIndex + 1) % pesos.length
   }
 
-  return nuevoSecuencial
+  const residuo = suma % 11
+  if (residuo === 0) return '0'
+
+  const resultado = 11 - residuo
+  if (resultado === 10) return '1'
+  if (resultado === 11) return '0'
+
+  return resultado.toString()
 }
+
+
 
 facturasRouter.post('/', async (req, res) => {
   const {
@@ -50,10 +81,46 @@ facturasRouter.post('/', async (req, res) => {
   try {
     await client.query('BEGIN')
 
-    // 1. Generar factura XML firmada
+    const estab = '001'
+    const pto_emi = '001'
+
+    // Buscar último secuencial
+    const { rows } = await client.query(
+      `SELECT secuencial FROM facturas 
+       WHERE estab = $1 AND pto_emi = $2 
+       ORDER BY secuencial DESC 
+       LIMIT 1`,
+      [estab, pto_emi]
+    )
+
+    let nuevoSecuencial = '000000001'
+    if (rows.length > 0 && rows[0].secuencial) {
+      const ultimo = parseInt(rows[0].secuencial, 10)
+      nuevoSecuencial = (ultimo + 1).toString().padStart(9, '0')
+    }
+
+    // Inyectar estab, pto_emi y secuencial a datosFactura
+    datosFactura.valores.secuencial = nuevoSecuencial
+    datosFactura.emisor.estab = estab
+    datosFactura.emisor.ptoEmi = pto_emi
+
+    // Regenerar clave de acceso con secuencial correcto
+    datosFactura.emisor.claveAcceso = generarClaveAcceso({
+      fecha: datosFactura.valores.fechaEmision,
+      tipoComprobante: '01',
+      ruc: datosFactura.emisor.ruc,
+      ambiente: datosFactura.emisor.ambiente,
+      estab,
+      ptoEmi: pto_emi,
+      secuencial: nuevoSecuencial,
+      codigoNumerico: '12345678', // o uno generado aleatoriamente
+      tipoEmision: datosFactura.emisor.tipoEmision,
+    })
+
+    // Generar factura XML firmada
     const facturaXmlFirmada = await generarFactura(datosFactura)
 
-    // 2. Guardar XML temporalmente (opcional)
+    // Guardar XML temporalmente
     const tempPath = path.join(
       process.cwd(),
       'facturas_xml',
@@ -61,39 +128,36 @@ facturasRouter.post('/', async (req, res) => {
     )
     fs.writeFileSync(tempPath, facturaXmlFirmada, 'utf-8')
 
-    // 3. Enviar a SRI (recepción)
+    // Enviar a SRI (recepción)
     const respuestaSri = await enviarComprobanteRecepcion(facturaXmlFirmada)
     console.log('respuestaSri:', respuestaSri.estado)
 
     if (respuestaSri.estado !== 'RECIBIDA') {
-      console.error(
-        '❌ Error en recepción:',
-        JSON.stringify(respuestaSri.raw, null, 2)
-      )
-      throw new Error(
-        'El SRI no aceptó la factura (estado diferente a RECIBIDA)'
-      )
+      console.error('❌ Error en recepción:', JSON.stringify(respuestaSri.raw, null, 2))
+      throw new Error('El SRI no aceptó la factura (estado diferente a RECIBIDA)')
     }
 
-    // 4. Autorizar comprobante
-    const resultadoAutorizacion = await autorizarComprobante(
-      datosFactura.emisor.claveAcceso
-    )
-    console.log('Autorización:', resultadoAutorizacion.estado)
+    // Autorizar comprobante
+    const resultado = await autorizarComprobante(datosFactura.emisor.claveAcceso, 5, 3000)
+    console.log('Autorización:', resultado.estado)
+    if (resultado.estado === 'AUTORIZADO') {
+      console.log('✅ Autorización exitosa')
+    }else{
+    console.error('❌ Error en recepción:', JSON.stringify(resultado.raw, null, 2))}
 
-    // 5. Insertar en la base de datos solo si pasó la validación
+
     const estadoFinal =
-      resultadoAutorizacion.estado === 'AUTORIZADO'
-        ? 'autorizado'
-        : 'no_autorizado'
+      resultado.estado === 'AUTORIZADO' ? 'autorizado' : 'no_autorizado'
 
+    // Guardar en base de datos
     const insertResult = await client.query(
       `
         INSERT INTO facturas (
           comanda_id, cliente_id, subtotal, iva, servicio, propina, total,
-          metodo_pago, caja_id, estado_sri, clave_acceso, auth
+          metodo_pago, caja_id, estado_sri, clave_acceso, auth,
+          estab, pto_emi, secuencial
         )
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
         RETURNING *
       `,
       [
@@ -109,12 +173,15 @@ facturasRouter.post('/', async (req, res) => {
         estadoFinal,
         resultadoAutorizacion.claveAccesoConsultada,
         resultadoAutorizacion.numeroAutorizacion,
+        estab,
+        pto_emi,
+        nuevoSecuencial,
       ]
     )
 
     const facturaDb = insertResult.rows[0]
 
-    // 6. Guardar XML firmado definitivo con ID
+    // Guardar XML definitivo
     const outputPath = path.join(
       process.cwd(),
       'facturas_xml',
@@ -122,12 +189,12 @@ facturasRouter.post('/', async (req, res) => {
     )
     fs.writeFileSync(outputPath, facturaXmlFirmada, 'utf-8')
 
-    // 7. Marcar comanda como cerrada
+    // Cerrar comanda
     await client.query(`UPDATE comandas SET estado = 'cerrada' WHERE id = $1`, [
       comanda_id,
     ])
 
-    // 8. Liberar mesa
+    // Liberar mesa
     await client.query(
       `
         UPDATE mesas 
@@ -138,7 +205,7 @@ facturasRouter.post('/', async (req, res) => {
     )
 
     await client.query('COMMIT')
-    res.status(201).json({ factura_id: facturaDb.id })
+    res.status(201).json({ factura_id: facturaDb.id, autorizacionSRI: resultadoAutorizacion.numeroAutorizacion })
   } catch (error) {
     await client.query('ROLLBACK')
     console.error('❌ Error al crear factura:', error)
@@ -147,6 +214,7 @@ facturasRouter.post('/', async (req, res) => {
     client.release()
   }
 })
+
 
 facturasRouter.get('/', async (req, res) => {
   const result = await pool.query(

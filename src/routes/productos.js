@@ -11,6 +11,7 @@ productosRouter.get('/', async (req, res) => {
     JOIN categorias c ON p.categoria_id = c.id
     ORDER BY p.id
   `)
+  console.log(result.rows)
   res.json(result.rows)
 })
 
@@ -29,11 +30,11 @@ ORDER BY p.id
 
 // Crear nuevo producto
 productosRouter.post('/', async (req, res) => {
-  const { nombre, precio, iva, categoria_id, imagen, iva_incluido, codigo } =
+  const { nombre, precio, iva, categoria_id, imagen, iva_incluido, codigo, active } =
     req.body
   const result = await pool.query(
-    'INSERT INTO productos (nombre, precio, iva, categoria_id, imagen, iva_incluido, codigo) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-    [nombre, precio, iva, categoria_id, imagen, iva_incluido, codigo]
+    'INSERT INTO productos (nombre, precio, iva, categoria_id, imagen, iva_incluido, codigo, active) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+    [nombre, precio, iva, categoria_id, imagen, iva_incluido, codigo, active]
   )
   res.status(201).json(result.rows[0])
 })

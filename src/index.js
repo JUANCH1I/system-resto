@@ -13,6 +13,7 @@ import reportesRouter from './routes/reportes.js'
 const app = express()
 app.use(cors())
 app.use(express.json())
+const port = process.env.PORT || 3000
 
 app.use('/api/categorias', categoriasRouter)
 app.use('/api/productos', productosRouter)
@@ -28,4 +29,4 @@ app.get('/', (req, res) => {
   res.send('Servidor corriendo')
 })
 
-app.listen(3000, () => console.log('Servidor en http://localhost:3000'))
+app.listen(port, () => console.log('Servidor en http://localhost:3000'))

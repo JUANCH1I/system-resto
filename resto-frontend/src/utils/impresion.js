@@ -11,7 +11,7 @@ export function imprimirFacturaCliente({
 }) {
   console.log('datosFactura', datosFactura)
   console.log('autorizacionSRI', autorizacionSRI)
-  const ventana = window.open('', '', 'width=400,height=700')
+  const ventana = window.open('', '', 'width=700,height=700')
   const html = `
       <!DOCTYPE html>
       <html>
@@ -19,6 +19,10 @@ export function imprimirFacturaCliente({
           <title>Factura Cliente</title>
           <meta charset="UTF-8">
           <style>
+          * {
+    color: #000 !important;
+    font-weight: bold !important;
+  }
             @page {
               margin: 0;
               size: 80mm 297mm;
@@ -126,7 +130,7 @@ export function imprimirFacturaCliente({
         <body>
           <div class="logo">
             <!-- Imagen circular con silueta de copas y botella -->
-            <img src="../public/logoChamuyo.ico" alt="Logo Chamuyo" onerror="this.style.display='none'">
+            <img src="../../public/logoChamuyo.ico" alt="Logo Chamuyo" onerror="this.style.display='none'">
           </div>
           
           <div class="header">
@@ -141,23 +145,19 @@ export function imprimirFacturaCliente({
             <span class="value">${factura_id}</span>
           </div>
           
-          <div class="info-row">
-            <span class="label">AUTORIZACIÓN:</span>
-            <span class="value">${autorizacionSRI}...</span>
-          </div>
-          
-          <div class="info-row">
-            <span class="label">DEL SRI:</span>
-            <span class="value"></span>
-          </div>
-          
+          <div class="info-row" style="flex-direction: column">
+  <span class="label">AUTORIZACIÓN:</span>
+  <span class="value" style="font-size: 10px; font-weight: bold; color: #2c3e50">${autorizacionSRI}</span>
+</div>
+
+
           <div class="info-row">
             <span class="label">FECHA DE VENTA:</span>
             <span class="value">${datosFactura.valores.fechaEmision}</span>
           </div>
           
           ${
-            cliente.tipo === "con_datos"
+            cliente.tipo === 'con_datos'
               ? `
           <div class="info-row">
             <span class="label">CLIENTE:</span>
@@ -165,23 +165,23 @@ export function imprimirFacturaCliente({
           </div>
           
           <div class="info-row">
-            <span class="label">RUC/CI:</span>
-            <span class="value">${datosFactura.cliente.cedula_ruc}</span>
+            <span class="label">RUC/CI:</span></br>
+            <span class="value">${datosFactura.cliente.identificacion}</span>
           </div>
           
           <div class="info-row">
             <span class="label">DIRECCIÓN:</span>
-            <span class="value">${datosFactura.cliente.direccion || "-"}</span>
+            <span class="value">${datosFactura.cliente.direccion || '-'}</span>
           </div>
           
           <div class="info-row">
             <span class="label">TELÉFONO:</span>
-            <span class="value">${datosFactura.cliente.telefono || "-"}</span>
+            <span class="value">${cliente.telefono || '-'}</span>
           </div>
           
           <div class="info-row">
             <span class="label">EMAIL:</span>
-            <span class="value">${datosFactura.cliente.correo || "-"}</span>
+            <span class="value">${cliente.correo || '-'}</span>
           </div>
           `
               : `
@@ -208,12 +208,17 @@ export function imprimirFacturaCliente({
                 <tr>
                   <td class="descripcion">${p.nombre}</td>
                   <td class="cantidad">${p.cantidad}</td>
-                  <td class="precio">${(p.precio_unitario / 1.15).toFixed(2)}</td>
-                  <td class="total">${(p.precio_unitario / 1.15) * p.cantidad}</td>
+                  <td class="precio">${(p.precio_unitario / 1.15).toFixed(
+                    2
+                  )}</td>
+                  <td class="total">${(
+                    (p.precio_unitario / 1.15) *
+                    p.cantidad
+                  ).toFixed(2)}</td>
                 </tr>
-              `,
+              `
                 )
-                .join("")}
+                .join('')}
             </tbody>
           </table>
           
@@ -230,14 +235,11 @@ export function imprimirFacturaCliente({
             Este documento no tiene ninguna validez tributaria.
             Su factura electrónica llegará a su correo electrónico.
             En caso de cualquier inquietud o reclamo contáctenos al correo electrónico:
-            info@samasatsa.com
+            juanimanfredi@gmail.com
           </div>
           
           <div class="footer">
-            <p>Descargue su documento en:</p>
-            <p>https://facturacion.samasatsa.com</p>
-            <p>Usuario: ${cliente.tipo === "con_datos" ? cliente.cedula_ruc : "----------"}</p>
-            <p>Clave: ${cliente.tipo === "con_datos" ? cliente.cedula_ruc : "----------"}</p>
+            
           </div>
           
           <div class="linea"></div>
@@ -272,6 +274,7 @@ export function imprimirComanda({
     return acc
   }, {})
 
+  const ventana = window.open('', '', 'width=700,height=700')
   const comandaHtml = `
       <!DOCTYPE html>
       <html>
@@ -285,6 +288,9 @@ export function imprimirComanda({
               margin: 0 auto;
               font-size: 12px;
             }
+              span{
+                color: #000000;
+              }
             .comanda-container {
               border: 1px solid #000;
               padding: 10px;
@@ -334,8 +340,7 @@ export function imprimirComanda({
             .cantidad {
               font-size: 14px;
               font-weight: bold;
-              background-color: #000;
-              color: #fff;
+              color: #000000;
               padding: 2px 6px;
               border-radius: 10px;
               display: inline-block;
@@ -387,13 +392,13 @@ export function imprimirComanda({
             
             <div class="comanda-info">
               <div>
-                <strong>Fecha:</strong> ${fechaComanda.split(' ')[0]}
-              </div>
+                <strong>Fecha: ${fechaComanda.split(' ')[0]}
+              </strong></div>
               <div>
-                <strong>Hora:</strong> ${
+                <strong>Hora: ${
                   fechaComanda.split(' ')[1] || new Date().toLocaleTimeString()
                 }
-              </div>
+              </strong></div>
             </div>
             
             ${mesero ? `<div><strong>Mesero:</strong> ${mesero}</div>` : ''}
@@ -401,7 +406,6 @@ export function imprimirComanda({
             ${Object.entries(productosPorCategoria)
               .map(
                 ([categoria, productos]) => `
-                  <div class="categoria">${categoria}</div>
                   ${productos
                     .map(
                       (p) => `
@@ -424,28 +428,22 @@ export function imprimirComanda({
               .join('')}
             
             <div class="footer">
-              <p>Impreso: ${new Date().toLocaleString()}</p>
+              <p><strong>Impreso: ${new Date().toLocaleString()}</strong></p>
             </div>
           </div>
         </body>
       </html>
     `
 
-  const ancho = screen.availWidth
-  const alto = screen.availHeight
-  const printWindow = window.open(
-    '',
-    'Factura',
-    `height=${alto},width=${ancho},left=0,top=0,toolbar=no,menubar=no,resizable=yes,scrollbars=no,location=no,status=no`
-  )
-  printWindow.document.write(comandaHtml)
-  printWindow.document.close()
-  printWindow.focus()
+  ventana.document.open()
+  ventana.document.write(comandaHtml)
+  ventana.document.close()
+  ventana.focus()
 
   // Pequeño retraso para asegurar que los estilos se carguen correctamente
   setTimeout(() => {
-    printWindow.print()
-    printWindow.close()
+    ventana.print()
+    ventana.close()
   }, 300)
 }
 
@@ -462,7 +460,7 @@ export function imprimirCierreCaja(caja) {
       return
     }
 
-    const ventana = window.open('', '_blank', 'width=400,height=600')
+    const ventana = window.open('', '', 'width=700,height=600')
     if (!ventana) {
       alert(
         'Por favor permita las ventanas emergentes para imprimir el cierre de caja'

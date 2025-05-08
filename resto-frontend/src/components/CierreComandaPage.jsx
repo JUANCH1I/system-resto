@@ -28,6 +28,8 @@ export default function CierreComandaPage() {
   const [error, setError] = useState(null)
   const [buscandoCliente, setBuscandoCliente] = useState(false)
   const [propinaPercentage, setPropinaPercentage] = useState(0)
+  const [conServicio, setConServicio] = useState(true)
+
   console.log(caja)
 
   useEffect(() => {
@@ -40,6 +42,7 @@ export default function CierreComandaPage() {
         )
         setComanda(res.data.comanda)
         setProductos(res.data.productos)
+        setConServicio(res.data.comanda.con_servicio ?? true)
       } catch (err) {
         console.error('Error al cargar comanda:', err)
         setError('No se pudo cargar la comanda. Por favor, intente nuevamente.')
@@ -53,35 +56,44 @@ export default function CierreComandaPage() {
 
   const calcularTotales = () => {
     const tasaIva = 0.15
-  
+
     let subtotal = 0
     let totalIva = 0
     let total = 0
     let servicio = 0
-  
+
     let precioTotalSinImpuesto = 0
     let precioSinIva = 0
     let precioConIva = 0
     let valorIva = 0
-  
+
     const detallesCalculados = productos.map((p) => {
       const precioConIvaUnitario = p.precio_unitario ?? p.precio
       const cantidad = Number(p.cantidad)
       const descuento = Number(p.descuento ?? 0)
-  
-      const precioSinIvaUnitario = +(precioConIvaUnitario / (1 + tasaIva)).toFixed(4)
-      const baseImponible = +(precioSinIvaUnitario * cantidad - descuento).toFixed(4)
+
+      const precioSinIvaUnitario = +(
+        precioConIvaUnitario /
+        (1 + tasaIva)
+      ).toFixed(2)
+      const baseImponible = +(
+        precioSinIvaUnitario * cantidad -
+        descuento
+      ).toFixed(2)
       const baseImponibleTotal = subtotal
-      const valorIvaProducto = +(baseImponible * tasaIva).toFixed(4)
-  
+      const valorIvaProducto = +(baseImponible * tasaIva).toFixed(2)
+
       subtotal += baseImponible
       totalIva += valorIvaProducto
-  
-      precioTotalSinImpuesto += +(precioConIvaUnitario * cantidad - descuento).toFixed(4)
-      precioSinIva += +(precioSinIvaUnitario * cantidad).toFixed(4)
-      precioConIva += +(precioConIvaUnitario * cantidad).toFixed(4)
+
+      precioTotalSinImpuesto += +(
+        precioSinIvaUnitario * cantidad -
+        descuento
+      ).toFixed(2)
+      precioSinIva += +(precioSinIvaUnitario * cantidad).toFixed(2)
+      precioConIva += +(precioConIvaUnitario * cantidad).toFixed(2)
       valorIva += valorIvaProducto
-  
+
       return {
         ...p,
         precioConIva: precioConIvaUnitario,
@@ -92,12 +104,11 @@ export default function CierreComandaPage() {
         cantidad,
       }
     })
-  
-    servicio = +(subtotal * 0.1).toFixed(2)
+
+    servicio = conServicio ? +(subtotal * 0.1).toFixed(2) : 0
     total = +(subtotal + totalIva + servicio).toFixed(2)
     const baseImponibleTotal = subtotal
 
-  
     return {
       subtotal: +subtotal,
       iva: +totalIva,
@@ -112,7 +123,25 @@ export default function CierreComandaPage() {
       detalles: detallesCalculados,
     }
   }
-  
+
+  const {
+    subtotal,
+    iva,
+    servicio,
+    total,
+    precioTotalSinImpuesto,
+    valorIva,
+    precioSinIva,
+    tasaIva,
+    precioConIva,
+  } = calcularTotales()
+
+  useEffect(() => {
+    if (total >= 50 && cliente.tipo !== 'con_datos') {
+      setCliente((prev) => ({ ...prev, tipo: 'con_datos' }))
+    }
+  }, [total])
+
   const buscarCliente = async (cedula) => {
     setBuscandoCliente(true)
     try {
@@ -146,63 +175,6 @@ export default function CierreComandaPage() {
     }
   }
 
-  function generarClaveAcceso({
-    fecha,
-    tipoComprobante = '01',
-    ruc,
-    ambiente = '2',
-    estab = '001',
-    ptoEmi = '001',
-    secuencial,
-    codigoNumerico,
-    tipoEmision = '1',
-  }) {
-    let fechaStr
-
-    if (fecha instanceof Date) {
-      const dia = fecha.getDate().toString().padStart(2, '0')
-      const mes = (fecha.getMonth() + 1).toString().padStart(2, '0')
-      const anio = fecha.getFullYear()
-      fechaStr = `${dia}${mes}${anio}`
-    } else if (typeof fecha === 'string') {
-      const partes = fecha.split('/')
-      if (partes.length === 3) {
-        const dia = partes[0].padStart(2, '0')
-        const mes = partes[1].padStart(2, '0')
-        const anio = partes[2]
-        fechaStr = `${dia}${mes}${anio}`
-      }
-    }
-
-    const serie = estab.padStart(3, '0') + ptoEmi.padStart(3, '0')
-    const secuencialStr = secuencial.toString().padStart(9, '0')
-
-    const codigoNumericoStr = (codigoNumerico || Math.floor(Math.random() * 100000000).toString().padStart(8, '0')).substring(0, 8)
-
-    const base = `${fechaStr}${tipoComprobante}${ruc}${ambiente}${serie}${secuencialStr}${codigoNumericoStr}${tipoEmision}`
-
-    const digitoVerificador = calcularModulo11(base)
-
-    return base + digitoVerificador
-  }
-
-
-  function calcularModulo11(numero) {
-    const pesos = [2, 3, 4, 5, 6, 7]
-    let suma = 0
-    let pesoIndex = 0
-
-    for (let i = numero.length - 1; i >= 0; i--) {
-      suma += parseInt(numero[i], 10) * pesos[pesoIndex]
-      pesoIndex = (pesoIndex + 1) % pesos.length
-    }
-
-    const residuo = suma % 11
-    if (residuo === 0) return '0'
-    const resultado = 11 - residuo
-    return resultado === 11 ? '0' : resultado.toString()
-  }
-
   function determinarTipoIdentificacion(identificacion) {
     if (!identificacion) return '07' // por defecto
 
@@ -228,8 +200,6 @@ export default function CierreComandaPage() {
     setError(null)
 
     try {
-      const { subtotal, iva, servicio, total, precioTotalSinImpuesto,  tasaIva, } = calcularTotales()
-
       let clienteId = null
       if (cliente.tipo === 'con_datos') {
         const resCliente = await axios.post(
@@ -239,23 +209,7 @@ export default function CierreComandaPage() {
         clienteId = resCliente.data.id
       }
 
-      const claveAcceso = generarClaveAcceso({
-        fecha: new Date().toLocaleDateString('es-EC'),
-        tipoComprobante: '01',
-        ruc: '1793167799001', // tu RUC real
-        ambiente: '1', // pruebas
-        estab: '001',
-        ptoEmi: '001',
-        secuencial: comanda.id.toString().padStart(9, '0'),
-        codigoNumerico: Math.floor(Math.random() * 100000000)
-          .toString()
-          .padStart(8, '0'),
-        tipoEmision: '1',
-      })
-
       productos.map((p) => console.log(p))
-      const { precioConIva, precioSinIva, valorIva, baseImponible } = calcularTotales()
-
 
       // 🧩 Datos para construir la factura
       const datosFactura = {
@@ -281,19 +235,26 @@ export default function CierreComandaPage() {
             const anio = fecha.getFullYear()
             return `${dia}/${mes}/${anio}`
           })(),
-          totalSinImpuestos: precioTotalSinImpuesto,
+          totalSinImpuestos: precioTotalSinImpuesto.toFixed(2),
           totalDescuento: productos.reduce(
             (sum, p) => sum + (p.descuento ?? 0),
             0
           ),
           totalIva: valorIva,
-          propina: parseFloat(propina),
-          importeTotal: total.toFixed(2),
+          propina: servicio.toFixed(2),
+          importeTotal: +(
+            productos.reduce((sum, p) => {
+              const precioConIvaUnitario = p.precio_unitario ?? p.precio ?? 0
+              const cantidad = Number(p.cantidad ?? 1)
+              const descuento = Number(p.descuento ?? 0)
+              return sum + (precioConIvaUnitario * cantidad - descuento)
+            }, 0) + servicio
+          ).toFixed(2),
           totalConImpuestos: [
             {
               codigo: '2', // IVA
               codigoPorcentaje: '4', // 2 = tarifa 15%
-              baseImponible: baseImponible.toFixed(2),
+              baseImponible: subtotal.toFixed(2),
               valor: iva.toFixed(2),
             },
           ],
@@ -304,53 +265,63 @@ export default function CierreComandaPage() {
           cantidad: p.cantidad,
           precioUnitario: +(p.precio_unitario / 1.15).toFixed(2),
           descuento: p.descuento ?? 0.0,
-          precioTotalSinImpuesto: precioSinIva.toFixed(2),
+          precioTotalSinImpuesto: (
+            (p.precio_unitario / 1.15) *
+            p.cantidad
+          ).toFixed(2),
           impuestos: [
             {
               codigo: '2',
               codigoPorcentaje: '4',
               tarifa: 15,
-              baseImponible:
-                +(p.precio_unitario * p.cantidad - (p.descuento ?? 0)).toFixed(2),
-              valor: +(baseImponible * 0.15).toFixed(2)
-              ,
+              baseImponible: (
+                (p.precio_unitario / 1.15) * p.cantidad -
+                (p.descuento ?? 0)
+              ).toFixed(2),
+              valor: ((p.precio_unitario / 1.15) * 0.15).toFixed(2),
             },
           ],
         })),
         pagos: [
           {
             formaPago:
-              metodoPago === 'efectivo' ? '01' :
-                metodoPago === 'tarjeta' ? '19' :
-                  metodoPago === 'transferencia' ? '20' :
-                    '01', // valor por defecto por si algo sale mal
+              metodoPago === 'efectivo'
+                ? '01'
+                : metodoPago === 'tarjeta'
+                ? '19'
+                : metodoPago === 'transferencia'
+                ? '20'
+                : '01', // valor por defecto por si algo sale mal
             total: total.toFixed(2),
             plazo: '1',
             tiempo: 'Días',
-          }
-        ]
-        ,
+          },
+        ],
+        infoAdicional: [
+          {
+            nombre: 'Correo cliente',
+            valor: cliente.correo,
+          },
+        ],
       }
 
-      console.log(JSON.stringify(datosFactura, null, 2))
-
       // ✅ Ahora enviás todo:
-      const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/facturas`, {
-        comanda_id: comanda.id,
-        cliente_id: clienteId,
-        subtotal,
-        iva,
-        servicio,
-        propina: Number.parseFloat(propina) || 0,
-        total,
-        metodo_pago: metodoPago,
-        caja_id: caja.id,
-        datosFactura, // 👈 MÁGIA: datos completos para construir XML
-      })
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_API_URL}/facturas`,
+        {
+          comanda_id: comanda.id,
+          cliente_id: clienteId,
+          subtotal,
+          iva,
+          servicio,
+          propina: Number.parseFloat(propina) || 0,
+          total,
+          metodo_pago: metodoPago,
+          caja_id: caja.id,
+          datosFactura, // 👈 MÁGIA: datos completos para construir XML
+        }
+      )
 
-      console.log(datosFactura)
-      console.log(data.autorizacionSRI)
-      console.log(data.factura_id)
       const { autorizacionSRI, factura_id } = data
 
       imprimirFacturaCliente({
@@ -365,7 +336,7 @@ export default function CierreComandaPage() {
         metodoPago,
         autorizacionSRI,
         factura_id,
-        datosFactura
+        datosFactura,
       })
 
       navigate('/mesas/diagrama')
@@ -377,6 +348,44 @@ export default function CierreComandaPage() {
     }
   }
 
+  const handleSubmitCobro = async () => {
+    if (submitting) return
+
+    setSubmitting(true)
+    setError(null)
+
+    try {
+      let clienteId = null
+      if (cliente.tipo === 'con_datos') {
+        const resCliente = await axios.post(
+          `${import.meta.env.VITE_API_URL}/clientes`,
+          cliente
+        )
+        clienteId = resCliente.data.id
+      }
+
+       await axios.post(
+        `${import.meta.env.VITE_API_URL}/facturas/cobrar`,
+        {
+          comanda_id: comanda.id,
+          cliente_id: clienteId,
+          subtotal,
+          iva,
+          servicio,
+          propina: Number.parseFloat(propina) || 0,
+          total,
+          metodo_pago: metodoPago,
+          caja_id: caja.id,
+        }
+      )
+      alert('Se ha cobrado el total de la mesa')
+    } catch (err) {
+      console.error('Error al generar factura:', err)
+      setError('No se pudo generar la factura. Por favor, intente nuevamente.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
   const handlePropinaPercentageChange = (percentage) => {
     const { subtotal } = calcularTotales()
     setPropinaPercentage(percentage)
@@ -667,13 +676,6 @@ export default function CierreComandaPage() {
     )
   }
 
-  const { subtotal, iva, servicio, total, precioTotalSinImpuesto, valorIva, precioSinIva, tasaIva, precioConIva } = calcularTotales()
-  console.log(precioTotalSinImpuesto)
-  console.log(valorIva)
-  console.log(precioSinIva)
-  console.log(tasaIva)
-  console.log(precioConIva) 
-
   return (
     <div style={styles.container}>
       <div style={styles.header}>
@@ -699,26 +701,23 @@ export default function CierreComandaPage() {
               </tr>
             </thead>
             <tbody>
-              {productos.map(
-                (producto, index) => (
-                  console.log(producto),
-                  (
-                    <tr key={index}>
-                      <td style={styles.tableCell}>{producto.nombre}</td>
-                      <td style={styles.tableCell}>{producto.cantidad}</td>
-                      <td style={styles.tableCell}>
-                        ${producto.precio_unitario}
-                      </td>
-                      <td style={styles.tableCell}>${producto.descuento}</td>
-                      <td style={styles.tableCell}>
-                        $
-                        {producto.precio_unitario * producto.cantidad -
-                          (producto.descuento ?? 0)}
-                      </td>
-                    </tr>
-                  )
-                )
-              )}
+              {productos.map((producto, index) => (
+                <tr key={index}>
+                  <td style={styles.tableCell}>{producto.nombre}</td>
+                  <td style={styles.tableCell}>{producto.cantidad}</td>
+                  <td style={styles.tableCell}>
+                    ${(producto.precio_unitario / 1.15).toFixed(2)}
+                  </td>
+                  <td style={styles.tableCell}>${producto.descuento}</td>
+                  <td style={styles.tableCell}>
+                    $
+                    {(
+                      (producto.precio_unitario / 1.15) * producto.cantidad -
+                      (producto.descuento ?? 0)
+                    ).toFixed(2)}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -733,8 +732,12 @@ export default function CierreComandaPage() {
               style={styles.radio}
               checked={cliente.tipo === 'consumidor_final'}
               onChange={() => setCliente({ tipo: 'consumidor_final' })}
+              disabled={total >= 50}
             />
-            <span style={styles.radioLabelText}>Consumidor Final</span>
+            <span style={styles.radioLabelText}>
+              {' '}
+              Consumidor Final {total >= 50 && ' (no permitido por total)'}
+            </span>
           </label>
           <label style={styles.radioLabel}>
             <input
@@ -779,6 +782,20 @@ export default function CierreComandaPage() {
                 value={cliente.nombre}
                 onChange={(e) =>
                   setCliente({ ...cliente, nombre: e.target.value })
+                }
+              />
+            </div>
+            <div style={styles.inputGroup}>
+              <label style={styles.label} htmlFor='apellido'>
+                Apellido*
+              </label>
+              <input
+                id='apellido'
+                style={styles.input}
+                placeholder='Ingrese Apellido'
+                value={cliente.apellido}
+                onChange={(e) =>
+                  setCliente({ ...cliente, apellido: e.target.value })
                 }
               />
             </div>
@@ -926,6 +943,16 @@ export default function CierreComandaPage() {
           disabled={submitting}
         >
           Cancelar
+        </button>
+        <button
+          style={{
+            ...styles.button(true),
+            ...(submitting ? styles.buttonDisabled : {}),
+          }}
+          onClick={handleSubmitCobro}
+          disabled={submitting || metodoPago.length === 0}
+        >
+          {submitting ? 'Procesando...' : 'Finalizar y cobrar'}
         </button>
         <button
           style={{

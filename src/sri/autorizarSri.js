@@ -1,7 +1,11 @@
 import axios from 'axios'
 import { parseStringPromise } from 'xml2js'
 
-export async function autorizarComprobante(claveAcceso, intentos = 5, esperaMs = 2000) {
+export async function autorizarComprobante(
+  claveAcceso,
+  intentos = 5,
+  esperaMs = 2000
+) {
   for (let i = 0; i < intentos; i++) {
     try {
       const soapBody = `
@@ -39,6 +43,7 @@ export async function autorizarComprobante(claveAcceso, intentos = 5, esperaMs =
         return {
           estado: autorizacion.estado?.[0] || null,
           numeroAutorizacion: autorizacion.numeroAutorizacion?.[0] || null,
+          claveAccesoConsultada: claveAcceso,
           fechaAutorizacion: autorizacion.fechaAutorizacion?.[0] || null,
           xmlAutorizado: autorizacion.comprobante?.[0] || null,
           raw: parsed,
@@ -50,7 +55,6 @@ export async function autorizarComprobante(claveAcceso, intentos = 5, esperaMs =
         console.log(`⌛ Esperando ${esperaMs}ms antes del intento ${i + 2}...`)
         await new Promise((res) => setTimeout(res, esperaMs))
       }
-
     } catch (error) {
       console.error('❌ Error en intento de autorización:', error.message)
       if (i === intentos - 1) throw error // lanzar si es el último intento

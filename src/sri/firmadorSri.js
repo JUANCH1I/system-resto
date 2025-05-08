@@ -1,4 +1,3 @@
-import fs from 'fs'
 import { DOMParser, XMLSerializer } from 'xmldom'
 import { Crypto } from '@peculiar/webcrypto'
 import * as xadesjs from 'xadesjs'
@@ -15,7 +14,6 @@ function limpiarCertificadoPem(pem) {
 xadesjs.Application.setEngine('NodeJS', new Crypto())
 
 export async function firmarFactura(xmlPath) {
-  const xmlOriginal = fs.readFileSync(xmlPath, 'utf-8')
   const p12Path = './src/certs/1013252787118662625022153733.p12'
   const p12Pass = process.env.PASSWORD_SIGNATURE // ← tu contraseña real
 
@@ -55,7 +53,7 @@ export async function firmarFactura(xmlPath) {
     ['sign']
   )
 
-  const dom = new DOMParser().parseFromString(xmlOriginal, 'text/xml')
+  const dom = new DOMParser().parseFromString(xmlPath, 'text/xml')
 
   const xmlToSign = dom.documentElement
 
@@ -93,7 +91,6 @@ export async function firmarFactura(xmlPath) {
   xmlToSign.appendChild(signedXml.XmlSignature.GetXml())
   const signedXmlString = new XMLSerializer().serializeToString(dom)
 
-  fs.writeFileSync('./factura-firmada.xml', signedXmlString, 'utf-8')
   console.log(
     '✅ XML firmado correctamente y guardado como factura-firmada.xml'
   )

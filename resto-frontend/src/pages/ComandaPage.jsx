@@ -15,6 +15,7 @@ export default function ComandaPage() {
   const [seleccionados, setSeleccionados] = useState([])
   const [categorias, setCategorias] = useState([])
   const [categoriaActiva, setCategoriaActiva] = useState('Todos')
+  const [conServicio, setConServicio] = useState(true)
   const [fechaComanda, setFechaComanda] = useState(
     new Date().toLocaleDateString()
   )
@@ -23,16 +24,18 @@ export default function ComandaPage() {
   const productosOriginalesRef = useRef([])
 
   useEffect(() => {
-    axios.get(`${import.meta.env.VITE_API_URL}/productos/actives`).then((res) => {
-      setProductos(res.data)
+    axios
+      .get(`${import.meta.env.VITE_API_URL}/productos/actives`)
+      .then((res) => {
+        setProductos(res.data)
 
-      // Extraer categorías únicas de los productos
-      const cats = [
-        'Todos',
-        ...new Set(res.data.map((p) => p.categoria || 'Sin categoría')),
-      ]
-      setCategorias(cats)
-    })
+        // Extraer categorías únicas de los productos
+        const cats = [
+          'Todos',
+          ...new Set(res.data.map((p) => p.categoria || 'Sin categoría')),
+        ]
+        setCategorias(cats)
+      })
 
     axios
       .get(`${import.meta.env.VITE_API_URL}/mesas/${idMesa}/comanda-activa`)
@@ -107,6 +110,7 @@ export default function ComandaPage() {
       const res = await axios.post(`${import.meta.env.VITE_API_URL}/comandas`, {
         mesa_id: idMesa,
         usuario_id: 1,
+        con_servicio: conServicio,
         productos: seleccionados.map((p) => ({
           producto_id: p.id,
           cantidad: p.cantidad,
@@ -118,6 +122,7 @@ export default function ComandaPage() {
       })
       setIdComanda(res.data.comanda_id)
       imprimirComanda({ idMesa, fechaComanda, seleccionados })
+      productosOriginalesRef.current = [...seleccionados]
     } catch (error) {
       alert('Error al enviar la comanda: ' + error.message)
     }
@@ -139,8 +144,10 @@ export default function ComandaPage() {
   }
 
   const guardarComanda = async () => {
+    console.log('idComanda', idComanda)
     try {
       if (!idComanda) {
+        console.log('creando comanda')
         // Crear comanda nueva
         const res = await axios.post(
           `${import.meta.env.VITE_API_URL}/comandas`,
@@ -163,6 +170,7 @@ export default function ComandaPage() {
         productosOriginalesRef.current = [...seleccionados]
       } else {
         // Actualizar comanda existente
+        console.log('actualizando comanda')
         await axios.put(
           `${import.meta.env.VITE_API_URL}/comandas/${idComanda}`,
           {
@@ -174,6 +182,8 @@ export default function ComandaPage() {
               precio_unitario: p.precio_unitario,
               codigo: p.codigo,
             })),
+            con_servicio: conServicio, // `true` o `false` según el checkbox
+
           }
         )
 
@@ -218,24 +228,24 @@ export default function ComandaPage() {
 
   const calcularTotales = () => {
     const tasaIva = 0.15
-  
+
     let subtotal = 0
     let totalIva = 0
     let total = 0
     let servicio = 0
-  
+
     const detallesCalculados = seleccionados.map((p) => {
       const precioConIva = p.precio_unitario ?? p.precio
       const cantidad = Number(p.cantidad)
       const descuento = Number(p.descuento ?? 0)
-  
+
       const precioSinIva = +(precioConIva / (1 + tasaIva)).toFixed(4)
       const baseImponible = +(precioSinIva * cantidad - descuento).toFixed(4)
       const valorIva = +(baseImponible * tasaIva).toFixed(4)
-  
+
       subtotal += baseImponible
       totalIva += valorIva
-  
+
       return {
         ...p,
         precioConIva,
@@ -246,10 +256,10 @@ export default function ComandaPage() {
         cantidad,
       }
     })
-  
-    servicio = +(subtotal * 0.1).toFixed(2)
+
+    servicio = conServicio ? +(subtotal * 0.1).toFixed(2) : 0
     total = +(subtotal + totalIva + servicio).toFixed(2)
-  
+
     return {
       subtotal: +subtotal.toFixed(2),
       iva: +totalIva.toFixed(2),
@@ -258,8 +268,6 @@ export default function ComandaPage() {
       detalles: detallesCalculados,
     }
   }
-  
-  
 
   const calcularTotal = () => {
     const subtotal = seleccionados.reduce((sum, p) => {
@@ -267,22 +275,20 @@ export default function ComandaPage() {
       const descuento = Number(p.descuento ?? 0) // descuento en valor
       return sum + (precio * p.cantidad - descuento)
     }, 0)
-  
+
     const iva = subtotal * 0.15
     const servicio = (subtotal + iva) * 0.1
     const propinaValue = Number.parseFloat(propina) || 0
     const total = subtotal + iva + servicio + propinaValue
-  
+
     return total.toFixed(2)
   }
-  
 
   const toggleComentario = (index) => {
     setComentarioActivo(comentarioActivo === index ? null : index)
   }
 
   const { total, subtotal, iva, servicio, detalles } = calcularTotales()
-
 
   // Estilos
   const styles = {
@@ -569,11 +575,19 @@ export default function ComandaPage() {
           <div style={styles.totalSection}>
             <span style={styles.totalLabel}>Subtotal:</span>
             <span style={styles.totalAmount}>${subtotal}</span>
-  
+
             <span style={styles.totalLabel}>IVA (15%):</span>
             <span style={styles.totalAmount}>${iva.toFixed(2)}</span>
-       
-            <span style={styles.totalLabel}>Servicio (10%):</span>
+
+            <span style={styles.totalLabel}>
+              <input
+                type='checkbox'
+                checked={conServicio}
+                onChange={(e) => setConServicio(e.target.checked)}
+                style={{ marginRight: '6px' }}
+              />
+              Servicio (10%):
+            </span>
             <span style={styles.totalAmount}>${servicio.toFixed(2)}</span>
             <span style={styles.totalLabel}>Total:</span>
             <span style={styles.totalAmount}>${total.toFixed(2)}</span>

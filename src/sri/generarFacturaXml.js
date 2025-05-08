@@ -113,6 +113,14 @@ export function generarFacturaXml(factura) {
     })
     detalleTag.up()
   })
+  if (factura.infoAdicional) {
+    console.trace('Agregando infoAdicional al XML') // ⬅️ imprime stack trace
+    const infoAdicional = doc.ele('infoAdicional')
+    factura.infoAdicional.forEach(({ nombre, valor }) => {
+      infoAdicional.ele('campoAdicional', { nombre }).txt(valor).up()
+    })
+    infoAdicional.up()
+  }
 
   // Terminar
   const xml = doc.end({ prettyPrint: true })

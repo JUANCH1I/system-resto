@@ -24,13 +24,13 @@ export default function ReportesPage() {
         axios.get(`${import.meta.env.VITE_API_URL}/reportes/ventas`, {
           params: dateRange,
         }),
-        //axios.get(`${import.meta.env.VITE_API_URL}/reportes/productos-mas-vendidos`, {
-        //  params: dateRange,
-        //}),
+        axios.get(`${import.meta.env.VITE_API_URL}/reportes/productos-mas-vendidos`, {
+          params: dateRange,
+        }),
       ])
 
       setVentasData(ventasRes.data)
-      //setProductosData(productosRes.data)
+      setProductosData(productosRes.data)
     } catch (err) {
       console.error("Error al cargar reportes:", err)
       setError("No se pudieron cargar los reportes. Por favor, intente nuevamente.")
@@ -38,6 +38,10 @@ export default function ReportesPage() {
       setLoading(false)
     }
   }
+
+  useEffect(() => { // 👈 Solo para mostrar el primer valor de la fecha
+    console.log(productosData)
+  }, [productosData])
 
   useEffect(() => {
     fetchReportes()
@@ -107,6 +111,7 @@ export default function ReportesPage() {
           </button>
         </form>
       </div>
+      
 
       {error && <div style={styles.errorMessage}>{error}</div>}
 
@@ -235,7 +240,7 @@ export default function ReportesPage() {
                             <tr key={producto.id} style={styles.tr}>
                               <td style={styles.td}>{index + 1}</td>
                               <td style={styles.td}>{producto.nombre}</td>
-                              <td style={styles.tdNumber}>{producto.cantidad}</td>
+                              <td style={styles.tdNumber}>{producto.total_unidades}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -245,8 +250,8 @@ export default function ReportesPage() {
                     <div style={styles.chartContainer}>
                       {productosData.map((producto, index) => {
                         // Calculate percentage of max value for bar width
-                        const maxCantidad = Math.max(...productosData.map((p) => p.cantidad))
-                        const percentage = (producto.cantidad / maxCantidad) * 100
+                        const maxCantidad = Math.max(...productosData.map((p) => p.total_unidades))
+                        const percentage = (producto.total_unidades / maxCantidad) * 100
 
                         return (
                           <div key={producto.id} style={styles.chartItem}>
@@ -259,7 +264,7 @@ export default function ReportesPage() {
                                   backgroundColor: getBarColor(index),
                                 }}
                               ></div>
-                              <span style={styles.chartValue}>{producto.cantidad}</span>
+                              <span style={styles.chartValue}>{producto.total_unidades}</span>
                             </div>
                           </div>
                         )

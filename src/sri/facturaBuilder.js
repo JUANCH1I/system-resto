@@ -1,4 +1,5 @@
 export function construirFactura(datos) {
+  console.log('datos', datos)
   return {
     ambiente: datos.emisor.ambiente || '',
     tipoEmision: datos.emisor.tipoEmision || '',
@@ -39,5 +40,6 @@ export function construirFactura(datos) {
       plazo: p.plazo,
       tiempo: p.tiempo,
     })),
+    infoAdicional: datos.infoAdicional,
   }
 }

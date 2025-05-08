@@ -5,7 +5,8 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js"
   },
   "author": "",
   "license": "ISC",
@@ -14,22 +15,26 @@
     "@peculiar/x509": "^1.12.3",
     "@xmldom/xmldom": "^0.9.8",
     "asn1js": "^3.0.6",
+    "bwip-js": "^4.6.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
-    "xmldom": "^0.6.0",
     "moment": "^2.30.1",
     "node-forge": "^1.3.1",
     "open-factura": "^0.1.1",
     "p12-pem": "^1.0.5",
+    "pdfkit": "^0.17.1",
     "pg": "^8.14.1",
     "pkijs": "^3.2.5",
     "pvutils": "^1.1.3",
+    "qr-image": "^3.2.0",
+    "resend": "^4.5.1",
     "rsbmk-open-factura": "^0.0.6",
     "xadesjs": "^2.2.0",
     "xml-crypto": "^6.1.2",
     "xml2js": "^0.6.2",
     "xmlbuilder2": "^3.1.1",
+    "xmldom": "^0.6.0",
     "xmldsigjs": "^2.6.1"
   },
   "devDependencies": {

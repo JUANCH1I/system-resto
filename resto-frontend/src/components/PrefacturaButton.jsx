@@ -9,6 +9,10 @@ export default function PrefacturaButton({ comanda, productos, subtotal, iva, se
         <head>
           <title>Prefactura</title>
           <style>
+          * {
+    color: #000 !important;
+    font-weight: bold !important;
+  }
             body {
               font-family: 'Helvetica', 'Arial', sans-serif;
               padding: 20px;
@@ -25,7 +29,6 @@ export default function PrefacturaButton({ comanda, productos, subtotal, iva, se
             }
             .prefactura-header {
               text-align: center;
-              margin-bottom: 20px;
               padding-bottom: 15px;
               border-bottom: 2px solid #f0f0f0;
             }
@@ -42,7 +45,6 @@ export default function PrefacturaButton({ comanda, productos, subtotal, iva, se
             .prefactura-info {
               display: flex;
               justify-content: space-between;
-              margin-bottom: 15px;
               font-size: 14px;
             }
             .prefactura-info div {
@@ -54,7 +56,6 @@ export default function PrefacturaButton({ comanda, productos, subtotal, iva, se
             .productos-table {
               width: 100%;
               border-collapse: collapse;
-              margin: 15px 0;
             }
             .productos-table th {
               background-color: #f8f9fa;
@@ -119,20 +120,23 @@ export default function PrefacturaButton({ comanda, productos, subtotal, iva, se
               margin-bottom: 15px;
             }
             .campo-datos {
-              margin-bottom: 15px;
+              margin-bottom: 10px;
             }
             .campo-datos label {
-              display: block;
+              display: flex;
+              flex-direction: row;
               font-size: 14px;
               margin-bottom: 5px;
               color: #495057;
               font-weight: 500;
+              justify-content: space-between;
             }
             .campo-datos .linea {
               border-bottom: 1px solid #ced4da;
               padding-bottom: 5px;
               font-size: 14px;
               color: #6c757d;
+              width: 70%;
             }
             .footer {
               margin-top: 30px;
@@ -186,13 +190,12 @@ export default function PrefacturaButton({ comanda, productos, subtotal, iva, se
                   .map(
                     (p) => `
                   <tr>
-                    <td>
+                    <td style="font-size: 10px;">
                       ${p.nombre}
-                      ${p.comentario ? `<div class="comentario">${p.comentario}</div>` : ""}
                     </td>
-                    <td>${p.cantidad}</td>
-                    <td style="text-align: right;">${p.precio_unitario}</td>
-                    <td style="text-align: right;">${(p.precio_unitario * p.cantidad).toFixed(2)}</td>
+                    <td style="font-size: 10px;">${p.cantidad}</td>
+                    <td style="text-align: right; font-size: 10px;">${(p.precio_unitario / 1.15).toFixed(2)}</td>
+                    <td style="text-align: right; font-size: 10px;">${((p.precio_unitario / 1.15) * p.cantidad).toFixed(2)}</td>
                   </tr>
                 `,
                   )
@@ -223,38 +226,35 @@ export default function PrefacturaButton({ comanda, productos, subtotal, iva, se
               <h3>Datos de facturación</h3>
               
               <div class="campo-datos">
-                <label>Nombre / Razón social:</label>
-                <div class="linea">&nbsp;</div>
+                <label>Nombre / Razón social:<div class="linea">&nbsp;</div></label>
+                
               </div>
               
               <div class="campo-datos">
-                <label>Cédula / RUC:</label>
-                <div class="linea">&nbsp;</div>
+                <label>Cédula / RUC:<div class="linea">&nbsp;</div></label>
+                
               </div>
               
               <div class="campo-datos">
-                <label>Correo electrónico:</label>
-                <div class="linea">&nbsp;</div>
+                <label>Correo electrónico:<div class="linea">&nbsp;</div></label>
+                
               </div>
 
               <div class="campo-datos">
-                <label>Dirección:</label>
-                <div class="linea">&nbsp;</div>
+                <label>Dirección:<div class="linea">&nbsp;</div></label>
+                
               </div>
               
               <div class="campo-datos">
-                <label>Teléfono:</label>
-                <div class="linea">&nbsp;</div>
+                <label>Teléfono:<div class="linea">&nbsp;</div></label>
+                
               </div>
 
               <div class="campo-datos">
-                <label>Propina:</label>
-                <div class="linea">&nbsp;</div>
+                <label>Propina:<div class="linea">&nbsp;</div></label>
+                
               </div>
             </div>
-
-              
-            
             <div class="footer">
               <p>¡Gracias por su visita!</p>
               <p>Esperamos verle pronto nuevamente</p>

@@ -1,6 +1,8 @@
 import { Router } from 'express'
 import { pool } from '../config/db.js' // ajusta según cómo importás pool en tu proyecto
+import path from 'path'
 
+const __dirname = path.dirname(new URL(import.meta.url).pathname)
 const reportesRouter = Router()
 
 // 📦 Reporte resumen de ventas
@@ -35,32 +37,23 @@ reportesRouter.get('/ventas', async (req, res) => {
 // 📦 Reporte productos más vendidos
 reportesRouter.get('/productos-mas-vendidos', async (req, res) => {
   try {
-    const { desde, hasta } = req.query
-
-    if (!desde || !hasta) {
-      return res.status(400).json({ error: 'Faltan fechas' })
-    }
-
-    const result = await pool.query(
-      `SELECT 
-        p.id, 
-        p.nombre, 
-        SUM(dp.cantidad) AS cantidad
-      FROM detalle_factura dp
-      JOIN productos p ON dp.producto_id = p.id
-      JOIN facturas f ON dp.factura_id = f.id
-      WHERE f.fecha_emision BETWEEN $1 AND $2
-        AND f.estado = 'AUTORIZADO'
+    const { rows } = await pool.query(`
+      SELECT 
+        p.id,
+        p.nombre,
+        SUM(dc.cantidad) AS total_unidades,
+        SUM(dc.cantidad * dc.precio_unitario) AS total_ingresos
+      FROM comanda_detalle dc
+      JOIN productos p ON p.id = dc.producto_id
       GROUP BY p.id, p.nombre
-      ORDER BY cantidad DESC
-      LIMIT 10`,
-      [desde, hasta]
-    )
+      ORDER BY total_unidades DESC
+      LIMIT 10
+    `)
 
-    res.json(result.rows)
+    res.json(rows)
   } catch (error) {
-    console.error('Error en /reportes/productos-mas-vendidos:', error)
-    res.status(500).json({ error: 'Error al obtener productos más vendidos' })
+    console.error('Error al obtener productos más vendidos:', error)
+    res.status(500).json({ error: 'Error interno del servidor' })
   }
 })
 

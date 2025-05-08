@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { imprimirCierreCaja } from "../utils/impresion"
+import { useCaja } from "../context/CajaContext"
 
 export default function CajaControlPage() {
   const [cajaAbierta, setCajaAbierta] = useState(null)
@@ -12,6 +13,7 @@ export default function CajaControlPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
   const [successMessage, setSuccessMessage] = useState("")
+  const {actualizarEstadoCaja} = useCaja()
 
   // Obtener usuario del localStorage
   const getUserFromLocalStorage = () => {
@@ -73,6 +75,7 @@ export default function CajaControlPage() {
       setMontoInicial("")
       setObservaciones("")
       cargarCaja()
+      await actualizarEstadoCaja()
     } catch (err) {
       console.error("Error al abrir caja:", err)
       setError("Error al abrir la caja. Por favor, intente nuevamente.")

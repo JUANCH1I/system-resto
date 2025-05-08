@@ -5,7 +5,7 @@ const comandasRouter = express.Router()
 
 // Crear nueva comanda
 comandasRouter.post('/', async (req, res) => {
-  const { mesa_id, usuario_id, productos } = req.body
+  const { mesa_id, usuario_id, productos, con_servicio = true } = req.body
   const client = await pool.connect()
 
   try {
@@ -29,9 +29,10 @@ comandasRouter.post('/', async (req, res) => {
 
     // Crear comanda
     const comandaResult = await client.query(
-      'INSERT INTO comandas (mesa_id, usuario_id, estado) VALUES ($1, $2, $3) RETURNING *',
-      [mesa_id, usuario_id, 'pendiente']
+      'INSERT INTO comandas (mesa_id, usuario_id, estado, con_servicio) VALUES ($1, $2, $3, $4) RETURNING *',
+      [mesa_id, usuario_id, 'pendiente', con_servicio]
     )
+
     const comanda = comandaResult.rows[0]
 
     // Insertar productos
@@ -71,7 +72,7 @@ comandasRouter.post('/', async (req, res) => {
 // En `routes/comandas.js`
 comandasRouter.put('/:id', async (req, res) => {
   const { id } = req.params
-  const { productos } = req.body
+  const { productos, con_servicio } = req.body
 
   const client = await pool.connect()
   try {
@@ -112,6 +113,13 @@ comandasRouter.put('/:id', async (req, res) => {
           item.precio_unitario,
           item.codigo,
         ]
+      )
+    }
+
+    if (typeof con_servicio === 'boolean') {
+      await client.query(
+        'UPDATE comandas SET con_servicio = $1 WHERE id = $2',
+        [con_servicio, id]
       )
     }
 

@@ -3,8 +3,8 @@ import { pool } from '../config/db.js'
 import { generarFactura } from '../sri/main.js'
 import { autorizarComprobante } from '../sri/autorizarSri.js'
 import { enviarComprobanteRecepcion } from '../sri/enviarComprobanteRecepcion.js'
-import path from 'path'
-import fs from 'fs'
+import { generarPDFDesdeXML } from '../sri/pdfFactura.js'
+import { resendEmail } from '../config/resend.js'
 
 const facturasRouter = express.Router()
 
@@ -16,7 +16,9 @@ function generarClaveAcceso({
   estab = '001',
   ptoEmi = '001',
   secuencial = '1',
-  codigoNumerico= Math.floor(Math.random() * 100000000).toString().padStart(8, '0'),
+  codigoNumerico = Math.floor(Math.random() * 100000000)
+    .toString()
+    .padStart(8, '0'),
   tipoEmision = '1',
 }) {
   const fechaObj = new Date()
@@ -60,8 +62,6 @@ function calcularModulo11(numero) {
   return resultado.toString()
 }
 
-
-
 facturasRouter.post('/', async (req, res) => {
   const {
     comanda_id,
@@ -86,12 +86,15 @@ facturasRouter.post('/', async (req, res) => {
 
     // Buscar último secuencial
     const { rows } = await client.query(
-      `SELECT secuencial FROM facturas 
-       WHERE estab = $1 AND pto_emi = $2 
-       ORDER BY secuencial DESC 
-       LIMIT 1`,
+      `SELECT secuencial
+FROM facturas
+WHERE estab = $1 AND pto_emi = $2 AND secuencial IS NOT NULL
+ORDER BY CAST(secuencial AS INTEGER) DESC
+LIMIT 1;
+`,
       [estab, pto_emi]
     )
+    console.log('rows:', rows[0].secuencial)
 
     let nuevoSecuencial = '000000001'
     if (rows.length > 0 && rows[0].secuencial) {
@@ -113,38 +116,44 @@ facturasRouter.post('/', async (req, res) => {
       estab,
       ptoEmi: pto_emi,
       secuencial: nuevoSecuencial,
-      codigoNumerico: '12345678', // o uno generado aleatoriamente
+      codigoNumerico: Math.floor(Math.random() * 100000000)
+        .toString()
+        .padStart(8, '0'),
       tipoEmision: datosFactura.emisor.tipoEmision,
     })
 
     // Generar factura XML firmada
     const facturaXmlFirmada = await generarFactura(datosFactura)
 
-    // Guardar XML temporalmente
-    const tempPath = path.join(
-      process.cwd(),
-      'facturas_xml',
-      `temp-${Date.now()}.xml`
-    )
-    fs.writeFileSync(tempPath, facturaXmlFirmada, 'utf-8')
-
     // Enviar a SRI (recepción)
     const respuestaSri = await enviarComprobanteRecepcion(facturaXmlFirmada)
     console.log('respuestaSri:', respuestaSri.estado)
 
     if (respuestaSri.estado !== 'RECIBIDA') {
-      console.error('❌ Error en recepción:', JSON.stringify(respuestaSri.raw, null, 2))
-      throw new Error('El SRI no aceptó la factura (estado diferente a RECIBIDA)')
+      console.error(
+        '❌ Error en recepción:',
+        JSON.stringify(respuestaSri.raw, null, 2)
+      )
+      throw new Error(
+        'El SRI no aceptó la factura (estado diferente a RECIBIDA)'
+      )
     }
 
     // Autorizar comprobante
-    const resultado = await autorizarComprobante(datosFactura.emisor.claveAcceso, 5, 3000)
+    const resultado = await autorizarComprobante(
+      datosFactura.emisor.claveAcceso,
+      5,
+      3000
+    )
     console.log('Autorización:', resultado.estado)
     if (resultado.estado === 'AUTORIZADO') {
       console.log('✅ Autorización exitosa')
-    }else{
-    console.error('❌ Error en recepción:', JSON.stringify(resultado.raw, null, 2))}
-
+    } else {
+      console.error(
+        '❌ Error en recepción:',
+        JSON.stringify(resultado.raw, null, 2)
+      )
+    }
 
     const estadoFinal =
       resultado.estado === 'AUTORIZADO' ? 'autorizado' : 'no_autorizado'
@@ -171,23 +180,15 @@ facturasRouter.post('/', async (req, res) => {
         metodo_pago,
         caja_id,
         estadoFinal,
-        resultadoAutorizacion.claveAccesoConsultada,
-        resultadoAutorizacion.numeroAutorizacion,
+        resultado.claveAccesoConsultada,
+        resultado.numeroAutorizacion,
         estab,
         pto_emi,
-        nuevoSecuencial,
+        datosFactura.valores.secuencial,
       ]
     )
 
     const facturaDb = insertResult.rows[0]
-
-    // Guardar XML definitivo
-    const outputPath = path.join(
-      process.cwd(),
-      'facturas_xml',
-      `factura-${facturaDb.id}.xml`
-    )
-    fs.writeFileSync(outputPath, facturaXmlFirmada, 'utf-8')
 
     // Cerrar comanda
     await client.query(`UPDATE comandas SET estado = 'cerrada' WHERE id = $1`, [
@@ -205,7 +206,15 @@ facturasRouter.post('/', async (req, res) => {
     )
 
     await client.query('COMMIT')
-    res.status(201).json({ factura_id: facturaDb.id, autorizacionSRI: resultadoAutorizacion.numeroAutorizacion })
+    console.log('facturaXmlFirmada', facturaXmlFirmada)
+    const pdfBuffer = await generarPDFDesdeXML(facturaXmlFirmada) // pasa XML como string
+    console.log('pdfBuffer', pdfBuffer)
+
+    await resendEmail(datosFactura.infoAdicional[0].valor, pdfBuffer)
+    res.status(201).json({
+      factura_id: facturaDb.id,
+      autorizacionSRI: resultado.numeroAutorizacion,
+    })
   } catch (error) {
     await client.query('ROLLBACK')
     console.error('❌ Error al crear factura:', error)
@@ -215,6 +224,70 @@ facturasRouter.post('/', async (req, res) => {
   }
 })
 
+facturasRouter.post('/cobrar', async (req, res) => {
+  const {
+    comanda_id,
+    cliente_id,
+    subtotal,
+    iva,
+    servicio,
+    propina,
+    total,
+    metodo_pago,
+    caja_id,
+  } = req.body
+
+  const client = await pool.connect()
+
+  try {
+    await client.query('BEGIN')
+
+    // Guardar en facturas sin contacto con SRI
+    const result = await client.query(
+      `
+      INSERT INTO facturas (
+        comanda_id, cliente_id, subtotal, iva, servicio, propina, total,
+        metodo_pago, caja_id, estado_sri
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'no_emitida')
+      RETURNING *
+    `,
+      [
+        comanda_id,
+        cliente_id,
+        subtotal,
+        iva,
+        servicio,
+        propina,
+        total,
+        metodo_pago,
+        caja_id,
+      ]
+    )
+
+    // Cerrar comanda
+    await client.query(`UPDATE comandas SET estado = 'cerrada' WHERE id = $1`, [
+      comanda_id,
+    ])
+
+    // Liberar mesa
+    await client.query(
+      `UPDATE mesas 
+       SET estado = 'libre', orden_actual_id = NULL
+       WHERE id = (SELECT mesa_id FROM comandas WHERE id = $1)`,
+      [comanda_id]
+    )
+
+    await client.query('COMMIT')
+    res.status(201).json({ factura_id: result.rows[0].id })
+  } catch (err) {
+    await client.query('ROLLBACK')
+    console.error('❌ Error en cierre sin SRI:', err)
+    res.status(500).json({ error: 'Error al cerrar comanda localmente' })
+  } finally {
+    client.release()
+  }
+})
 
 facturasRouter.get('/', async (req, res) => {
   const result = await pool.query(

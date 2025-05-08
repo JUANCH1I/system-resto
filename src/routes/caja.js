@@ -50,7 +50,7 @@ cajasRouter.post('/cerrar', async (req, res) => {
          COALESCE(SUM(total), 0) AS total_facturado
        FROM facturas
        WHERE caja_id = $1
-         AND estado_sri = 'no_autorizado'`,
+         AND estado_sri = 'autorizado' OR estado_sri = 'no_emitida`,
       [cajaId]
     )
 
@@ -104,7 +104,7 @@ cajasRouter.get('/abierta', async (req, res) => {
          COALESCE(SUM(CASE WHEN metodo_pago = 'transferencia' THEN total ELSE 0 END), 0) AS transferencia
        FROM facturas
        WHERE caja_id = $1
-         AND estado_sri = 'no_autorizado'`,
+         AND estado_sri = 'autorizado' OR estado_sri = 'no_emitida'`,
       [caja.id]
     )
 

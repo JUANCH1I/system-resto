@@ -16,7 +16,7 @@ export function CajaProvider({ children }) {
 
   async function fetchCaja() {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/cajas/abierta`)
+      const res = await axios.get(`${import.meta.env.VITE_API_URL_PRODUCTION}/cajas/abierta`)
       setCajaAbierta(true)
       setCaja(res.data)
     } catch (error) {
@@ -30,7 +30,7 @@ export function CajaProvider({ children }) {
 
   const actualizarEstadoCaja = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/cajas/abierta`)
+      const res = await axios.get(`${import.meta.env.VITE_API_URL_PRODUCTION}/cajas/abierta`)
       setCajaAbierta(true)
       setCaja(res.data)
     } catch (error) {

@@ -43,7 +43,7 @@ export default function CajaControlPage() {
     try {
       setLoading(true)
       setError(null)
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/cajas/abierta`)
+      const res = await axios.get(`${import.meta.env.VITE_API_URL_PRODUCTION}/cajas/abierta`)
       setCajaAbierta(res.data)
       console.log("Datos de caja:", res.data)
     } catch (err) {
@@ -66,7 +66,7 @@ export default function CajaControlPage() {
     try {
       setSubmitting(true)
       setError(null)
-      await axios.post(`${import.meta.env.VITE_API_URL}/cajas/abrir`, {
+      await axios.post(`${import.meta.env.VITE_API_URL_PRODUCTION}/cajas/abrir`, {
         usuario_id: user.id,
         monto_inicial: Number.parseFloat(montoInicial),
         observaciones,
@@ -92,7 +92,7 @@ export default function CajaControlPage() {
     try {
       setSubmitting(true)
       setError(null)
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/cajas/cerrar`, {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL_PRODUCTION}/cajas/cerrar`, {
         id: cajaAbierta.id,
         observaciones,
       })

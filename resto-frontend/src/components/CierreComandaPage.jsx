@@ -38,7 +38,7 @@ export default function CierreComandaPage() {
       setError(null)
       try {
         const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/comandas/${id}`
+          `${import.meta.env.VITE_API_URL_PRODUCTION}/comandas/${id}`
         )
         setComanda(res.data.comanda)
         setProductos(res.data.productos)
@@ -146,7 +146,7 @@ export default function CierreComandaPage() {
     setBuscandoCliente(true)
     try {
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/clientes/${cedula}`
+        `${import.meta.env.VITE_API_URL_PRODUCTION}/clientes/${cedula}`
       )
 
       if (res.data) {
@@ -203,7 +203,7 @@ export default function CierreComandaPage() {
       let clienteId = null
       if (cliente.tipo === 'con_datos') {
         const resCliente = await axios.post(
-          `${import.meta.env.VITE_API_URL}/clientes`,
+          `${import.meta.env.VITE_API_URL_PRODUCTION}/clientes`,
           cliente
         )
         clienteId = resCliente.data.id
@@ -307,7 +307,7 @@ export default function CierreComandaPage() {
 
       // ✅ Ahora enviás todo:
       const { data } = await axios.post(
-        `${import.meta.env.VITE_API_URL}/facturas`,
+        `${import.meta.env.VITE_API_URL_PRODUCTION}/facturas`,
         {
           comanda_id: comanda.id,
           cliente_id: clienteId,
@@ -358,14 +358,14 @@ export default function CierreComandaPage() {
       let clienteId = null
       if (cliente.tipo === 'con_datos') {
         const resCliente = await axios.post(
-          `${import.meta.env.VITE_API_URL}/clientes`,
+          `${import.meta.env.VITE_API_URL_PRODUCTION}/clientes`,
           cliente
         )
         clienteId = resCliente.data.id
       }
 
        await axios.post(
-        `${import.meta.env.VITE_API_URL}/facturas/cobrar`,
+        `${import.meta.env.VITE_API_URL_PRODUCTION}/facturas/cobrar`,
         {
           comanda_id: comanda.id,
           cliente_id: clienteId,

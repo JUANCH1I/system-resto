@@ -28,8 +28,8 @@ export default function ProductosPage() {
     setError(null)
     try {
       const [productosRes, categoriasRes] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_API_URL}/productos`),
-        axios.get(`${import.meta.env.VITE_API_URL}/categorias`),
+        axios.get(`${import.meta.env.VITE_API_URL_PRODUCTION}/productos`),
+        axios.get(`${import.meta.env.VITE_API_URL_PRODUCTION}/categorias`),
       ])
       setProductos(productosRes.data)
       setCategorias(categoriasRes.data)
@@ -92,12 +92,12 @@ export default function ProductosPage() {
 
       if (editandoId) {
         await axios.put(
-          `${import.meta.env.VITE_API_URL}/productos/${editandoId}`,
+          `${import.meta.env.VITE_API_URL_PRODUCTION}/productos/${editandoId}`,
           form
         )
         showSuccessMessage('Producto actualizado correctamente')
       } else {
-        await axios.post(`${import.meta.env.VITE_API_URL}/productos`, form)
+        await axios.post(`${import.meta.env.VITE_API_URL_PRODUCTION}/productos`, form)
         showSuccessMessage('Producto creado correctamente')
       }
 
@@ -133,7 +133,7 @@ export default function ProductosPage() {
     if (window.confirm('¿Está seguro que desea eliminar este producto?')) {
       setSubmitting(true)
       try {
-        await axios.delete(`${import.meta.env.VITE_API_URL}/productos/${id}`)
+        await axios.delete(`${import.meta.env.VITE_API_URL_PRODUCTION}/productos/${id}`)
         showSuccessMessage('Producto eliminado correctamente')
         fetchData()
       } catch (err) {

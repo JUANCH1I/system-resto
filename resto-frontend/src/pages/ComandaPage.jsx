@@ -25,7 +25,7 @@ export default function ComandaPage() {
 
   useEffect(() => {
     axios
-      .get(`${import.meta.env.VITE_API_URL}/productos/actives`)
+      .get(`${import.meta.env.VITE_API_URL_PRODUCTION}/productos/actives`)
       .then((res) => {
         setProductos(res.data)
 
@@ -38,12 +38,12 @@ export default function ComandaPage() {
       })
 
     axios
-      .get(`${import.meta.env.VITE_API_URL}/mesas/${idMesa}/comanda-activa`)
+      .get(`${import.meta.env.VITE_API_URL_PRODUCTION}/mesas/${idMesa}/comanda-activa`)
       .then((res) => {
         const comandaId = res.data.comanda_id
         setIdComanda(comandaId)
         return axios.get(
-          `${import.meta.env.VITE_API_URL}/comandas/${comandaId}`
+          `${import.meta.env.VITE_API_URL_PRODUCTION}/comandas/${comandaId}`
         )
       })
       .then((res) => {
@@ -107,7 +107,7 @@ export default function ComandaPage() {
     }
 
     try {
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/comandas`, {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL_PRODUCTION}/comandas`, {
         mesa_id: idMesa,
         usuario_id: 1,
         con_servicio: conServicio,
@@ -150,7 +150,7 @@ export default function ComandaPage() {
         console.log('creando comanda')
         // Crear comanda nueva
         const res = await axios.post(
-          `${import.meta.env.VITE_API_URL}/comandas`,
+          `${import.meta.env.VITE_API_URL_PRODUCTION}/comandas`,
           {
             mesa_id: idMesa,
             usuario_id: 1,
@@ -172,7 +172,7 @@ export default function ComandaPage() {
         // Actualizar comanda existente
         console.log('actualizando comanda')
         await axios.put(
-          `${import.meta.env.VITE_API_URL}/comandas/${idComanda}`,
+          `${import.meta.env.VITE_API_URL_PRODUCTION}/comandas/${idComanda}`,
           {
             productos: seleccionados.map((p) => ({
               producto_id: p.producto_id,
@@ -642,7 +642,7 @@ export default function ComandaPage() {
 
                     await axios.patch(
                       `${
-                        import.meta.env.VITE_API_URL
+                        import.meta.env.VITE_API_URL_PRODUCTION
                       }/comandas/${idComanda}/cerrar`
                     )
                     alert('Mesa liberada')

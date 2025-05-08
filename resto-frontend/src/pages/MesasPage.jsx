@@ -7,7 +7,7 @@ export default function MesasPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    axios.get(`${import.meta.env.VITE_API_URL}/mesas`).then((res) => {
+    axios.get(`${import.meta.env.VITE_API_URL_PRODUCTION}/mesas`).then((res) => {
       setMesas(res.data)
     })
   }, [])

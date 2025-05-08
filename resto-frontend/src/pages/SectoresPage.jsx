@@ -18,7 +18,7 @@ export default function CategoriasPage() {
     setLoading(true)
     setError(null)
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/categorias`)
+      const res = await axios.get(`${import.meta.env.VITE_API_URL_PRODUCTION}/categorias`)
       setCategorias(res.data)
     } catch (err) {
       console.error("Error al cargar categorías:", err)
@@ -57,10 +57,10 @@ export default function CategoriasPage() {
       const data = { nombre, descripcion }
 
       if (editandoId) {
-        await axios.put(`${import.meta.env.VITE_API_URL}/categorias/${editandoId}`, data)
+        await axios.put(`${import.meta.env.VITE_API_URL_PRODUCTION}/categorias/${editandoId}`, data)
         showSuccessMessage("Categoría actualizada correctamente")
       } else {
-        await axios.post(`${import.meta.env.VITE_API_URL}/categorias`, data)
+        await axios.post(`${import.meta.env.VITE_API_URL_PRODUCTION}/categorias`, data)
         showSuccessMessage("Categoría creada correctamente")
       }
 
@@ -84,7 +84,7 @@ export default function CategoriasPage() {
     if (window.confirm("¿Está seguro que desea eliminar esta categoría?")) {
       setSubmitting(true)
       try {
-        await axios.delete(`${import.meta.env.VITE_API_URL}/categorias/${id}`)
+        await axios.delete(`${import.meta.env.VITE_API_URL_PRODUCTION}/categorias/${id}`)
         showSuccessMessage("Categoría eliminada correctamente")
         fetchCategorias()
       } catch (err) {

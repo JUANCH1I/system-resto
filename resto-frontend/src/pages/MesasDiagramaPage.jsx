@@ -30,7 +30,7 @@ export default function MesasDiagramaPage() {
   useEffect(() => {
     setLoading(true)
     axios
-      .get(`${import.meta.env.VITE_API_URL}/mesas`)
+      .get(`${import.meta.env.VITE_API_URL_PRODUCTION}/mesas`)
       .then((res) => {
         setMesas(res.data)
         setLoading(false)

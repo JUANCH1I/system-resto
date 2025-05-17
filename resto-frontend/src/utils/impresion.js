@@ -347,7 +347,8 @@ export function imprimirComanda({
               background-color: #f8f8f8;
               border-left: 3px solid #000;
               font-style: italic;
-              color:#000000 ;
+              font-weight: bold;
+              color: #000000;
             }
             .footer {
               margin-top: 5px;

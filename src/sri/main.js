@@ -3,7 +3,6 @@ import { generarFacturaXml } from './generarFacturaXml.js'
 import { firmarFactura } from './firmadorSri.js'
 
 export async function generarFactura(datosFactura) {
-  console.log('datosFacturaMain', datosFactura)
   try {
     // 1. Construir objeto de factura
     const facturaObjeto = construirFactura(datosFactura)

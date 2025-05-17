@@ -26,7 +26,6 @@ reportesRouter.get('/ventas', async (req, res) => {
         AND estado_sri = 'pendiente'`, // (opcional: solo facturas autorizadas)
       [desde, hasta]
     )
-    console.log(result.rows[0])
     res.json(result.rows[0])
   } catch (error) {
     console.error('Error en /reportes/ventas:', error)

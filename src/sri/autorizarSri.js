@@ -20,7 +20,7 @@ export async function autorizarComprobante(
       `
 
       const response = await axios.post(
-        process.env.URL_PRUEBA_AUTORIZACION,
+        process.env.URL_PRODUCCION_AUTORIZACION,
         soapBody,
         {
           headers: {

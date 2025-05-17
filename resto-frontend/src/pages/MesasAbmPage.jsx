@@ -16,7 +16,7 @@ export default function MesasAbmPage() {
     setLoadingData(true)
     setError(null)
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL_PRODUCTION}/mesas`)
+      const res = await axios.get(`${__API_URL__}/mesas`)
       setMesas(res.data)
     } catch (err) {
       console.error("Error al cargar mesas:", err)
@@ -51,10 +51,10 @@ export default function MesasAbmPage() {
       }
 
       if (editandoId) {
-        await axios.put(`${import.meta.env.VITE_API_URL_PRODUCTION}/mesas/${editandoId}`, form)
+        await axios.put(`${__API_URL__}/mesas/${editandoId}`, form)
         showSuccessMessage("Mesa actualizada correctamente")
       } else {
-        await axios.post(`${import.meta.env.VITE_API_URL_PRODUCTION}/mesas`, form)
+        await axios.post(`${__API_URL__}/mesas`, form)
         showSuccessMessage("Mesa creada correctamente")
       }
 
@@ -81,7 +81,7 @@ export default function MesasAbmPage() {
     if (window.confirm("¿Está seguro que desea eliminar esta mesa?")) {
       setLoading(true)
       try {
-        await axios.delete(`${import.meta.env.VITE_API_URL_PRODUCTION}/mesas/${id}`)
+        await axios.delete(`${__API_URL__}/mesas/${id}`)
         showSuccessMessage("Mesa eliminada correctamente")
         fetchMesas()
       } catch (err) {

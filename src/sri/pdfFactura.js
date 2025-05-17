@@ -10,7 +10,6 @@ import { PassThrough } from 'stream'
  */
 export async function generarPDF(datos) {
   // Crear documento PDF
-  console.log('datos', datos)
   const doc = new PDFDocument({
     size: 'A4',
     margin: 30,
@@ -412,12 +411,10 @@ export async function generarPDFDesdeXML(pathXML, logoPath = null) {
 
   try {
     const result = await parseStringPromise(pathXML, { explicitArray: false })
-    console.log('result', result)
 
     const factura = result.factura
     const info = factura.infoTributaria
     const infoFactura = factura.infoFactura
-    console.log('infoFactura', infoFactura)
     const detalleRaw = factura.detalles?.detalle
     const detalles = Array.isArray(detalleRaw) ? detalleRaw : [detalleRaw]
 
@@ -492,7 +489,6 @@ export async function generarPDFDesdeXML(pathXML, logoPath = null) {
           2
         ) || '',
       valorTotal: infoFactura.importeTotal || '',
-      urlDescarga: 'https://facturacionelectronica.samasat.info/sivenin/login',
       usuarioDescarga: infoFactura.identificacionComprador || '',
       claveDescarga: infoFactura.identificacionComprador || '',
     }

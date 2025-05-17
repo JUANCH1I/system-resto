@@ -30,7 +30,7 @@ export function imprimirFacturaCliente({
             body {
               font-family: 'Courier New', monospace;
               padding: 5mm;
-              max-width: 80mm;
+              max-width: 75mm;
               margin: 0 auto;
               color: #000;
               line-height: 1.2;
@@ -127,12 +127,7 @@ export function imprimirFacturaCliente({
             }
           </style>
         </head>
-        <body>
-          <div class="logo">
-            <!-- Imagen circular con silueta de copas y botella -->
-            <img src="../../public/logoChamuyo.ico" alt="Logo Chamuyo" onerror="this.style.display='none'">
-          </div>
-          
+        <body>        
           <div class="header">
             <p class="ruc">1793167799001</p>
             <p>CHAMUYO 002</p>
@@ -260,6 +255,7 @@ export function imprimirFacturaCliente({
 
 export function imprimirComanda({
   idMesa,
+  nombreMesa,
   fechaComanda,
   seleccionados,
   mesero = '',
@@ -279,26 +275,27 @@ export function imprimirComanda({
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Comanda Mesa ${idMesa}</title>
+          <title>Mesa ${idMesa}</title>
           <style>
+          @page {
+  size: 80mm auto; /* Ancho 80mm, alto dinámico */
+}
+
             body {
               font-family: 'Courier New', monospace;
               padding: 10px;
               max-width: 300px;
               margin: 0 auto;
-              font-size: 12px;
+              font-size: 10px;
             }
               span{
                 color: #000000;
               }
             .comanda-container {
               border: 1px solid #000;
-              padding: 10px;
             }
             .comanda-header {
               text-align: center;
-              margin-bottom: 10px;
-              padding-bottom: 10px;
               border-bottom: 1px dashed #000;
             }
             .comanda-header h1 {
@@ -308,16 +305,15 @@ export function imprimirComanda({
             }
             .comanda-header h2 {
               margin: 5px 0;
-              font-size: 16px;
+              font-size: 10px;
               font-weight: bold;
             }
             .comanda-info {
               display: flex;
               justify-content: space-between;
-              margin-bottom: 10px;
+              margin-bottom: 5px;
               font-size: 12px;
               border-bottom: 1px dashed #000;
-              padding-bottom: 10px;
             }
             .categoria {
               margin-top: 15px;
@@ -327,18 +323,16 @@ export function imprimirComanda({
               border-bottom: 1px solid #000;
             }
             .producto {
-              margin-bottom: 10px;
-              padding-bottom: 5px;
+              margin-bottom: 5px;
               border-bottom: 1px dotted #ccc;
             }
             .producto-header {
               display: flex;
               justify-content: space-between;
               font-weight: bold;
-              margin-bottom: 3px;
             }
             .cantidad {
-              font-size: 14px;
+              font-size: 10px;
               font-weight: bold;
               color: #000000;
               padding: 2px 6px;
@@ -353,12 +347,12 @@ export function imprimirComanda({
               background-color: #f8f8f8;
               border-left: 3px solid #000;
               font-style: italic;
+              color:#000000 ;
             }
             .footer {
-              margin-top: 20px;
+              margin-top: 5px;
               text-align: center;
               font-size: 10px;
-              padding-top: 10px;
               border-top: 1px dashed #000;
             }
             .checkbox {
@@ -386,8 +380,7 @@ export function imprimirComanda({
         <body>
           <div class="comanda-container">
             <div class="comanda-header">
-              <h1>COMANDA</h1>
-              <h2>MESA ${idMesa}</h2>
+              <h2>${nombreMesa}</h2>
             </div>
             
             <div class="comanda-info">
@@ -426,10 +419,6 @@ export function imprimirComanda({
                 `
               )
               .join('')}
-            
-            <div class="footer">
-              <p><strong>Impreso: ${new Date().toLocaleString()}</strong></p>
-            </div>
           </div>
         </body>
       </html>

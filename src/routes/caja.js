@@ -14,7 +14,6 @@ cajasRouter.post('/abrir', async (req, res) => {
       return res.status(400).json({ error: 'Ya hay una caja abierta.' })
     }
 
-    console.log(usuario_id, monto_inicial, observaciones)
     const result = await pool.query(
       'INSERT INTO cajas (usuario_id, monto_inicial, observaciones) VALUES ($1, $2, $3) RETURNING *',
       [usuario_id, monto_inicial, observaciones || '']
@@ -47,12 +46,13 @@ cajasRouter.post('/cerrar', async (req, res) => {
     // Sumar TODAS las ventas (no solo efectivo)
     const ventas = await pool.query(
       `SELECT 
-         COALESCE(SUM(total), 0) AS total_facturado
-       FROM facturas
-       WHERE caja_id = $1
-         AND estado_sri = 'autorizado' OR estado_sri = 'no_emitida`,
+     COALESCE(SUM(total), 0) AS total_facturado
+   FROM facturas
+   WHERE caja_id = $1
+     AND (estado_sri = 'autorizado' OR estado_sri = 'no_emitida')`,
       [cajaId]
     )
+
 
     const totalFacturado = parseFloat(ventas.rows[0].total_facturado) || 0
 
@@ -78,8 +78,6 @@ cajasRouter.get('/abierta/:id', async (req, res) => {
     'SELECT * FROM cajas WHERE usuario_id = $1 AND estado = $2',
     [id, 'abierta']
   )
-  console.log(id)
-  console.log(result.rows[0])
   res.json(result.rows[0])
 })
 
@@ -98,15 +96,16 @@ cajasRouter.get('/abierta', async (req, res) => {
 
     const ventas = await pool.query(
       `SELECT 
-         COALESCE(SUM(total), 0) AS total,
-         COALESCE(SUM(CASE WHEN metodo_pago = 'efectivo' THEN total ELSE 0 END), 0) AS efectivo,
-         COALESCE(SUM(CASE WHEN metodo_pago = 'tarjeta' THEN total ELSE 0 END), 0) AS tarjeta,
-         COALESCE(SUM(CASE WHEN metodo_pago = 'transferencia' THEN total ELSE 0 END), 0) AS transferencia
-       FROM facturas
-       WHERE caja_id = $1
-         AND estado_sri = 'autorizado' OR estado_sri = 'no_emitida'`,
+     COALESCE(SUM(total), 0) AS total,
+     COALESCE(SUM(CASE WHEN metodo_pago = 'efectivo' THEN total ELSE 0 END), 0) AS efectivo,
+COALESCE(SUM(CASE WHEN metodo_pago IN ('tarjeta', 'tarjeta_debito') THEN total ELSE 0 END), 0) AS tarjeta,
+     COALESCE(SUM(CASE WHEN metodo_pago = 'transferencia' THEN total ELSE 0 END), 0) AS transferencia
+   FROM facturas
+   WHERE caja_id = $1
+     AND (estado_sri = 'autorizado' OR estado_sri = 'no_emitida')`,
       [caja.id]
     )
+
 
     res.json({
       ...caja,

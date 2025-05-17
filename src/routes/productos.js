@@ -11,7 +11,6 @@ productosRouter.get('/', async (req, res) => {
     JOIN categorias c ON p.categoria_id = c.id
     ORDER BY p.id
   `)
-  console.log(result.rows)
   res.json(result.rows)
 })
 
@@ -49,14 +48,11 @@ productosRouter.put('/:id', async (req, res) => {
   const { id } = req.params
   const { nombre, precio, iva, categoria_id, imagen, iva_incluido, active } =
     req.body
-  console.log(id)
-  console.log(req.body)
   const result = await pool.query(
     'UPDATE productos SET nombre = $1, precio = $2, iva = $3, categoria_id = $4, imagen = $5, iva_incluido = $6, active = $7 WHERE id = $8 RETURNING *',
     [nombre, precio, iva, categoria_id, imagen, iva_incluido, active, id]
   )
 
-  console.log(result.rows[0])
   res.json(result.rows[0])
 })
 

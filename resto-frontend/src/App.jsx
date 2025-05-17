@@ -15,11 +15,14 @@ import RequireAuth from './components/RequireAuth'
 import HistorialCajasPage from './pages/HistorialCajaPage'
 import ReportesPage from './pages/ReportesPage'
 import { CajaProvider } from './context/CajaContext'
+import { Toaster } from 'react-hot-toast'
+
 
 export default function App() {
   return (
     <BrowserRouter>
       <CajaProvider>
+          <Toaster/>
         <MainLayout>
           <Routes>
             <Route path="/" element={<RequireAuth><HomePage /></RequireAuth>} />

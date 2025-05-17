@@ -8,7 +8,7 @@ authRouter.post('/', async (req, res) => {
   const { usuario, password } = req.body
   try {
     const result = await pool.query(
-      'SELECT * FROM usuarios WHERE email = $1 AND password = $2',
+      'SELECT * FROM usuarios WHERE nombre = $1 AND password = $2',
       [usuario, password]
     )
 

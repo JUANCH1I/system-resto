@@ -11,8 +11,8 @@ export const resendEmail = async (email, data) => {
     const response = await resend.emails.send({
       from: 'Factura <facturas@facturas.chamuyo.vip>',
       to: email,
-      subject: 'Factura electrónica',
-      html: `<p>Adjunto encontrarás tu factura electrónica.</p>`,
+      subject: 'Factura electrónica CHAMUYO',
+      html: `<p>Adjunto encontrarás tu factura electrónica. Muchas Gracias por visitarnos</p>`,
       attachments: [
         {
           filename: 'factura.pdf',

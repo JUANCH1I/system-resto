@@ -12,7 +12,7 @@ function generarClaveAcceso({
   fecha,
   tipoComprobante = '01',
   ruc,
-  ambiente = '1',
+  ambiente = '2',
   estab = '001',
   ptoEmi = '001',
   secuencial = '1',
@@ -25,7 +25,6 @@ function generarClaveAcceso({
   const dia = fechaObj.getDate().toString().padStart(2, '0')
   const mes = (fechaObj.getMonth() + 1).toString().padStart(2, '0')
   const anio = fechaObj.getFullYear()
-  console.log('fechaObj:', fechaObj)
   const fechaStr = `${dia}${mes}${anio}`
 
   const serie = estab.padStart(3, '0') + ptoEmi.padStart(3, '0')
@@ -37,7 +36,6 @@ function generarClaveAcceso({
     throw new Error(`Clave base incorrecta: tiene ${base.length} caracteres`)
   }
   const digitoVerificador = calcularModulo11(base)
-  console.log('digitoVerificador', digitoVerificador)
 
   return base + digitoVerificador
 }
@@ -94,9 +92,8 @@ LIMIT 1;
 `,
       [estab, pto_emi]
     )
-    console.log('rows:', rows[0].secuencial)
 
-    let nuevoSecuencial = '000000001'
+    let nuevoSecuencial = '000000072'
     if (rows.length > 0 && rows[0].secuencial) {
       const ultimo = parseInt(rows[0].secuencial, 10)
       nuevoSecuencial = (ultimo + 1).toString().padStart(9, '0')
@@ -146,14 +143,14 @@ LIMIT 1;
       3000
     )
     console.log('Autorización:', resultado.estado)
-    if (resultado.estado === 'AUTORIZADO') {
-      console.log('✅ Autorización exitosa')
-    } else {
-      console.error(
-        '❌ Error en recepción:',
-        JSON.stringify(resultado.raw, null, 2)
-      )
-    }
+    if (resultado.estado !== 'AUTORIZADO') {
+  console.error(
+    '❌ Factura no autorizada:',
+    JSON.stringify(resultado.raw, null, 2)
+  )
+  throw new Error('El SRI no autorizó la factura. No se guardará.')
+}
+
 
     const estadoFinal =
       resultado.estado === 'AUTORIZADO' ? 'autorizado' : 'no_autorizado'
@@ -206,7 +203,6 @@ LIMIT 1;
     )
 
     await client.query('COMMIT')
-    console.log('facturaXmlFirmada', facturaXmlFirmada)
     const pdfBuffer = await generarPDFDesdeXML(facturaXmlFirmada) // pasa XML como string
     console.log('pdfBuffer', pdfBuffer)
 
@@ -291,7 +287,7 @@ facturasRouter.post('/cobrar', async (req, res) => {
 
 facturasRouter.get('/', async (req, res) => {
   const result = await pool.query(
-    'SELECT *,f.id, c.cedula_ruc FROM facturas f JOIN clientes c ON f.cliente_id = c.id ORDER BY f.fecha DESC'
+    'SELECT f.*, f.id, c.cedula_ruc FROM facturas f LEFT JOIN clientes c ON f.cliente_id = c.id ORDER BY f.fecha DESC'
   )
   res.json(result.rows)
 })

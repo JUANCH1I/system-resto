@@ -17,7 +17,6 @@ export default function InicioPage() {
     { label: "Clientes", path: "/clientes" },
     { label: "Facturas", path: "/facturas" },
     { label: "Historial de Cajas", path: "/historial-cajas" },
-    { label: "Login", path: "/login" },
     
   ]
 

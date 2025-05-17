@@ -27,7 +27,7 @@ export default function ClientesPage() {
     setLoading(true)
     setError(null)
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL_PRODUCTION}/clientes`)
+      const res = await axios.get(`${__API_URL__}/clientes`)
       setClientes(res.data)
     } catch (err) {
       console.error("Error al cargar clientes", err)
@@ -63,10 +63,10 @@ export default function ClientesPage() {
 
     try {
       if (clienteEditando) {
-        await axios.put(`${import.meta.env.VITE_API_URL_PRODUCTION}/clientes/${clienteEditando.id}`, formData)
+        await axios.put(`${__API_URL__}/clientes/${clienteEditando.id}`, formData)
         mostrarMensajeExito("Cliente actualizado correctamente")
       } else {
-        await axios.post(`${import.meta.env.VITE_API_URL_PRODUCTION}/clientes`, formData)
+        await axios.post(`${__API_URL__}/clientes`, formData)
         mostrarMensajeExito("Cliente creado correctamente")
       }
       resetForm()
@@ -99,7 +99,7 @@ export default function ClientesPage() {
 
     setLoading(true)
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL_PRODUCTION}/clientes/${id}`)
+      await axios.delete(`${__API_URL__}/clientes/${id}`)
       mostrarMensajeExito("Cliente eliminado correctamente")
       cargarClientes()
     } catch (err) {

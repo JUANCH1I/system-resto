@@ -20,7 +20,7 @@ export default function HistorialFacturasPage() {
     setLoading(true)
     setError(null)
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL_PRODUCTION}/facturas`)
+      const res = await axios.get(`${__API_URL__}/facturas`)
       setFacturas(res.data)
     } catch (err) {
       console.error("Error al cargar facturas", err)

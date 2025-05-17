@@ -21,10 +21,10 @@ export default function ReportesPage() {
     try {
       // Fetch both reports in parallel
       const [ventasRes, productosRes] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_API_URL_PRODUCTION}/reportes/ventas`, {
+        axios.get(`${__API_URL__}/reportes/ventas`, {
           params: dateRange,
         }),
-        axios.get(`${import.meta.env.VITE_API_URL_PRODUCTION}/reportes/productos-mas-vendidos`, {
+        axios.get(`${__API_URL__}/reportes/productos-mas-vendidos`, {
           params: dateRange,
         }),
       ])

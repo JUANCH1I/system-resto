@@ -38,7 +38,7 @@ export default function CierreComandaPage() {
       setError(null)
       try {
         const res = await axios.get(
-          `${import.meta.env.VITE_API_URL_PRODUCTION}/comandas/${id}`
+          `${__API_URL__}/comandas/${id}`
         )
         setComanda(res.data.comanda)
         setProductos(res.data.productos)
@@ -146,7 +146,7 @@ export default function CierreComandaPage() {
     setBuscandoCliente(true)
     try {
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL_PRODUCTION}/clientes/${cedula}`
+        `${__API_URL__}/clientes/${cedula}`
       )
 
       if (res.data) {
@@ -169,6 +169,8 @@ export default function CierreComandaPage() {
       setCliente((prevCliente) => ({
         ...prevCliente,
         cedula_ruc: cedula,
+        tipoIdentificacion: determinarTipoIdentificacion(cedula),
+
       }))
     } finally {
       setBuscandoCliente(false)
@@ -203,7 +205,7 @@ export default function CierreComandaPage() {
       let clienteId = null
       if (cliente.tipo === 'con_datos') {
         const resCliente = await axios.post(
-          `${import.meta.env.VITE_API_URL_PRODUCTION}/clientes`,
+          `${__API_URL__}/clientes`,
           cliente
         )
         clienteId = resCliente.data.id
@@ -214,7 +216,7 @@ export default function CierreComandaPage() {
       // 🧩 Datos para construir la factura
       const datosFactura = {
         emisor: {
-          ambiente: '1', // pruebas
+          ambiente: '2', // pruebas
           tipoEmision: '1',
           razonSocial: 'MANFREDI MARIANO DAMIAN CHAMUYO',
           nombreComercial: 'CHAMUYO',
@@ -224,7 +226,7 @@ export default function CierreComandaPage() {
         cliente: {
           nombre: cliente.nombre || 'Consumidor Final',
           identificacion: cliente.cedula_ruc || '9999999999999',
-          tipoIdentificacion: cliente.tipoIdentificacion || '07',
+          tipoIdentificacion: cliente.tipoIdentificacion || determinarTipoIdentificacion(cliente.cedula_ruc),
           direccion: cliente.direccion,
         },
         valores: {
@@ -266,8 +268,7 @@ export default function CierreComandaPage() {
           precioUnitario: +(p.precio_unitario / 1.15).toFixed(2),
           descuento: p.descuento ?? 0.0,
           precioTotalSinImpuesto: (
-            (p.precio_unitario / 1.15) *
-            p.cantidad
+            (p.precio_unitario / 1.15) * p.cantidad - (p.descuento ?? 0)
           ).toFixed(2),
           impuestos: [
             {
@@ -278,7 +279,9 @@ export default function CierreComandaPage() {
                 (p.precio_unitario / 1.15) * p.cantidad -
                 (p.descuento ?? 0)
               ).toFixed(2),
-              valor: ((p.precio_unitario / 1.15) * 0.15).toFixed(2),
+valor: (
+  ((p.precio_unitario / 1.15) * p.cantidad - (p.descuento ?? 0)) * 0.15
+).toFixed(2),
             },
           ],
         })),
@@ -287,11 +290,13 @@ export default function CierreComandaPage() {
             formaPago:
               metodoPago === 'efectivo'
                 ? '01'
-                : metodoPago === 'tarjeta'
-                ? '19'
-                : metodoPago === 'transferencia'
-                ? '20'
-                : '01', // valor por defecto por si algo sale mal
+                : metodoPago === 'tarjeta debito'
+                  ? '16'
+                  : metodoPago === 'tarjeta'
+                    ? '19'
+                    : metodoPago === 'transferencia'
+                      ? '20'
+                      : '01', // valor por defecto por si algo sale mal
             total: total.toFixed(2),
             plazo: '1',
             tiempo: 'Días',
@@ -307,7 +312,7 @@ export default function CierreComandaPage() {
 
       // ✅ Ahora enviás todo:
       const { data } = await axios.post(
-        `${import.meta.env.VITE_API_URL_PRODUCTION}/facturas`,
+        `${__API_URL__}/facturas`,
         {
           comanda_id: comanda.id,
           cliente_id: clienteId,
@@ -358,14 +363,14 @@ export default function CierreComandaPage() {
       let clienteId = null
       if (cliente.tipo === 'con_datos') {
         const resCliente = await axios.post(
-          `${import.meta.env.VITE_API_URL_PRODUCTION}/clientes`,
+          `${__API_URL__}/clientes`,
           cliente
         )
         clienteId = resCliente.data.id
       }
 
-       await axios.post(
-        `${import.meta.env.VITE_API_URL_PRODUCTION}/facturas/cobrar`,
+      await axios.post(
+        `${__API_URL__}/facturas/cobrar`,
         {
           comanda_id: comanda.id,
           cliente_id: clienteId,
@@ -711,11 +716,12 @@ export default function CierreComandaPage() {
                   <td style={styles.tableCell}>${producto.descuento}</td>
                   <td style={styles.tableCell}>
                     $
-                    {(
-                      (producto.precio_unitario / 1.15) * producto.cantidad -
-                      (producto.descuento ?? 0)
-                    ).toFixed(2)}
+                    {(() => {
+                      const valor = (producto.precio_unitario / 1.15) * producto.cantidad - (producto.descuento ?? 0)
+                      return Math.abs(valor) < 0.005 ? '0.00' : valor.toFixed(2)
+                    })()}
                   </td>
+
                 </tr>
               ))}
             </tbody>
@@ -866,7 +872,19 @@ export default function CierreComandaPage() {
             onChange={() => setMetodoPago('tarjeta')}
           />
           <span style={styles.checkboxLabelText}>
-            Tarjeta de crédito/débito
+            Tarjeta de crédito
+          </span>
+        </label>
+        <label style={styles.checkboxGroup}>
+          <input
+            type='radio'
+            name='metodoPago'
+            value='tarjeta debito'
+            checked={metodoPago === 'tarjeta_debito'}
+            onChange={() => setMetodoPago('tarjeta_debito')}
+          />
+          <span style={styles.checkboxLabelText}>
+            Tarjeta de débito
           </span>
         </label>
 
@@ -886,7 +904,7 @@ export default function CierreComandaPage() {
         <h3 style={styles.sectionTitle}>Totales</h3>
         <div style={styles.totalesGrid}>
           <div style={styles.totalLabel}>Subtotal:</div>
-          <div style={styles.totalValue}>${subtotal}</div>
+          <div style={styles.totalValue}>${subtotal.toFixed(2)}</div>
 
           <div style={styles.totalLabel}>IVA (15%):</div>
           <div style={styles.totalValue}>${iva.toFixed(2)}</div>

@@ -28,7 +28,7 @@ export default function HistorialCajasPage() {
         return
       }
 
-      const res = await axios.get(`${import.meta.env.VITE_API_URL_PRODUCTION}/cajas/historial/${usuario.id}`)
+      const res = await axios.get(`${__API_URL__}/cajas/historial/${usuario.id}`)
       setHistorial(res.data)
     } catch (err) {
       console.error("Error al obtener historial de cajas", err)

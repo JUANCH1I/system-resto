@@ -15,7 +15,6 @@ export default function PrefacturaButton({ comanda, productos, subtotal, iva, se
   }
             body {
               font-family: 'Helvetica', 'Arial', sans-serif;
-              padding: 20px;
               max-width: 500px;
               margin: 0 auto;
               color: #333;
@@ -24,12 +23,10 @@ export default function PrefacturaButton({ comanda, productos, subtotal, iva, se
             .prefactura-container {
               border: 1px solid #ddd;
               border-radius: 8px;
-              padding: 20px;
               box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             }
             .prefactura-header {
               text-align: center;
-              padding-bottom: 15px;
               border-bottom: 2px solid #f0f0f0;
             }
             .prefactura-header h2 {
@@ -40,12 +37,12 @@ export default function PrefacturaButton({ comanda, productos, subtotal, iva, se
             .prefactura-header p {
               margin: 5px 0 0;
               color: #7f8c8d;
-              font-size: 14px;
+              font-size: 10px;
             }
             .prefactura-info {
               display: flex;
               justify-content: space-between;
-              font-size: 14px;
+              font-size: 8px;
             }
             .prefactura-info div {
               flex: 1;
@@ -63,13 +60,12 @@ export default function PrefacturaButton({ comanda, productos, subtotal, iva, se
               text-align: left;
               font-weight: 600;
               color: #2c3e50;
-              font-size: 14px;
+              font-size: 12px;
               border-bottom: 2px solid #ddd;
             }
             .productos-table td {
-              padding: 8px;
               border-bottom: 1px solid #eee;
-              font-size: 14px;
+              font-size: 12px;
             }
             .productos-table .comentario {
               font-size: 12px;
@@ -78,22 +74,19 @@ export default function PrefacturaButton({ comanda, productos, subtotal, iva, se
               padding-top: 3px;
             }
             .totales {
-              margin-top: 20px;
               border-top: 2px solid #f0f0f0;
-              padding-top: 15px;
             }
             .totales-item {
               display: flex;
               justify-content: space-between;
-              margin-bottom: 8px;
-              font-size: 14px;
+              font-size: 10px;
             }
             .total-final {
-              font-size: 18px;
+              font-size: 14px;
               font-weight: bold;
               color: #2c3e50;
-              margin-top: 10px;
-              padding-top: 10px;
+              margin-top: 5px;
+              padding-top: 5px;
               border-top: 2px solid #f0f0f0;
               display: flex;
               justify-content: space-between;
@@ -107,8 +100,8 @@ export default function PrefacturaButton({ comanda, productos, subtotal, iva, se
               border-left: 4px solid #007bff;
             }
             .datos-facturacion {
-              margin-top: 30px;
-              padding: 15px;
+              margin-top: 15px;
+              padding: 10px;
               background-color: #f8f9fa;
               border-radius: 6px;
               border: 1px dashed #ced4da;
@@ -126,7 +119,6 @@ export default function PrefacturaButton({ comanda, productos, subtotal, iva, se
               display: flex;
               flex-direction: row;
               font-size: 14px;
-              margin-bottom: 5px;
               color: #495057;
               font-weight: 500;
               justify-content: space-between;
@@ -139,7 +131,7 @@ export default function PrefacturaButton({ comanda, productos, subtotal, iva, se
               width: 70%;
             }
             .footer {
-              margin-top: 30px;
+              margin-top: 5px;
               text-align: center;
               font-size: 12px;
               color: #7f8c8d;
@@ -168,11 +160,9 @@ export default function PrefacturaButton({ comanda, productos, subtotal, iva, se
             <div class="prefactura-info">
               <div>
                 <p><strong>Mesa:</strong> ${comanda.mesa_id}</p>
-                <p><strong>Comanda:</strong> #${comanda.id}</p>
               </div>
-              <div style="text-align: right;">
-                <p><strong>Fecha:</strong> ${new Date().toLocaleDateString()}</p>
-                <p><strong>Hora:</strong> ${new Date().toLocaleTimeString()}</p>
+              <div>
+                <p><strong>Fecha:</strong> ${new Date().toLocaleDateString()} <strong>Hora:</strong> ${new Date().toLocaleTimeString()}</p>
               </div>
             </div>
             
@@ -195,7 +185,7 @@ export default function PrefacturaButton({ comanda, productos, subtotal, iva, se
                     </td>
                     <td style="font-size: 10px;">${p.cantidad}</td>
                     <td style="text-align: right; font-size: 10px;">${(p.precio_unitario / 1.15).toFixed(2)}</td>
-                    <td style="text-align: right; font-size: 10px;">${((p.precio_unitario / 1.15) * p.cantidad).toFixed(2)}</td>
+                    <td style="text-align: right; font-size: 10px;">${(((p.precio_unitario / 1.15) * p.cantidad)-p.descuento).toFixed(2)}</td>
                   </tr>
                 `,
                   )

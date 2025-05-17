@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from 'react'
 import axios from 'axios'
 import { imprimirComanda } from '../utils/impresion'
 import ComandaItem from '../components/ComandaItem'
+import toast from 'react-hot-toast'
 
 export default function ComandaPage() {
   const { id: idMesa } = useParams()
@@ -25,7 +26,7 @@ export default function ComandaPage() {
 
   useEffect(() => {
     axios
-      .get(`${import.meta.env.VITE_API_URL_PRODUCTION}/productos/actives`)
+      .get(`${__API_URL__}/productos/actives`)
       .then((res) => {
         setProductos(res.data)
 
@@ -38,12 +39,12 @@ export default function ComandaPage() {
       })
 
     axios
-      .get(`${import.meta.env.VITE_API_URL_PRODUCTION}/mesas/${idMesa}/comanda-activa`)
+      .get(`${__API_URL__}/mesas/${idMesa}/comanda-activa`)
       .then((res) => {
         const comandaId = res.data.comanda_id
         setIdComanda(comandaId)
         return axios.get(
-          `${import.meta.env.VITE_API_URL_PRODUCTION}/comandas/${comandaId}`
+          `${__API_URL__}/comandas/${comandaId}`
         )
       })
       .then((res) => {
@@ -107,7 +108,7 @@ export default function ComandaPage() {
     }
 
     try {
-      const res = await axios.post(`${import.meta.env.VITE_API_URL_PRODUCTION}/comandas`, {
+      const res = await axios.post(`${__API_URL__}/comandas`, {
         mesa_id: idMesa,
         usuario_id: 1,
         con_servicio: conServicio,
@@ -121,7 +122,7 @@ export default function ComandaPage() {
         })),
       })
       setIdComanda(res.data.comanda_id)
-      imprimirComanda({ idMesa, fechaComanda, seleccionados })
+      imprimirComanda({ idMesa, nombreMesa, fechaComanda, seleccionados })
       productosOriginalesRef.current = [...seleccionados]
     } catch (error) {
       alert('Error al enviar la comanda: ' + error.message)
@@ -150,7 +151,7 @@ export default function ComandaPage() {
         console.log('creando comanda')
         // Crear comanda nueva
         const res = await axios.post(
-          `${import.meta.env.VITE_API_URL_PRODUCTION}/comandas`,
+          `${__API_URL__}/comandas`,
           {
             mesa_id: idMesa,
             usuario_id: 1,
@@ -166,13 +167,13 @@ export default function ComandaPage() {
         )
 
         setIdComanda(res.data.comanda_id)
-        imprimirComanda({ idMesa, fechaComanda, seleccionados })
+        imprimirComanda({ idMesa, nombreMesa, fechaComanda, seleccionados })
         productosOriginalesRef.current = [...seleccionados]
       } else {
         // Actualizar comanda existente
         console.log('actualizando comanda')
         await axios.put(
-          `${import.meta.env.VITE_API_URL_PRODUCTION}/comandas/${idComanda}`,
+          `${__API_URL__}/comandas/${idComanda}`,
           {
             productos: seleccionados.map((p) => ({
               producto_id: p.producto_id,
@@ -206,17 +207,35 @@ export default function ComandaPage() {
 
           imprimirComanda({
             idMesa,
+            nombreMesa,
             fechaComanda,
             seleccionados: productosConDiferencias,
           })
         }
 
         productosOriginalesRef.current = [...seleccionados]
+        toast.success('Comanda Guardada')
       }
     } catch (error) {
       alert('Error al guardar la comanda: ' + error.message)
     }
   }
+  const reimprimirComanda = () => {
+    if (!idComanda || seleccionados.length === 0) {
+      toast.error('No hay comanda activa o productos para imprimir')
+      return
+    }
+
+    imprimirComanda({
+      idMesa,
+      nombreMesa,
+      fechaComanda,
+      seleccionados,
+    })
+
+    toast.success('Comanda reimpresa')
+  }
+
 
   const productosFiltrados = productos.filter((p) => {
     const categoriaOk =
@@ -345,10 +364,9 @@ export default function ComandaPage() {
     },
     categorias: {
       display: 'flex',
-      overflowX: 'auto',
-      padding: '10px 15px',
-      borderBottom: '1px solid #e9ecef',
-      gap: '10px',
+      flexDirection: 'row',
+      whiteSpace: 'nowrap',
+      WebkitOverflowScrolling: 'touch',
     },
     categoriaBtn: (activa) => ({
       padding: '6px 12px',
@@ -555,9 +573,24 @@ export default function ComandaPage() {
                 setComentarioActivo={setComentarioActivo}
                 onChange={(idx, newProducto) => {
                   const nuevos = [...seleccionados]
+                  const tasaIva = 0.15
+                  const precioConIva = newProducto.precio_unitario ?? newProducto.precio
+                  const precioSinIva = +(precioConIva / (1 + tasaIva)).toFixed(4)
+                  const cantidad = Number(newProducto.cantidad)
+                  const maxDescuento = +(precioSinIva * cantidad).toFixed(2)
+
+                  // Limitar el descuento si es mayor al precio sin IVA total
+                  if (Number(newProducto.descuento) > maxDescuento) {
+                    newProducto.descuento = maxDescuento
+                    toast(`El descuento fue ajustado a $${maxDescuento}`, {
+                      icon: '⚠️',
+                      duration: 3000,
+                    })
+                  }
                   nuevos[idx] = newProducto
                   setSeleccionados(nuevos)
                 }}
+
                 onDelete={(idx) => eliminarProducto(idx)}
               />
             ))
@@ -621,6 +654,16 @@ export default function ComandaPage() {
                 <button
                   style={{
                     ...styles.actionButton,
+                    backgroundColor: '#6c757d', // gris oscuro
+                  }}
+                  onClick={reimprimirComanda}
+                >
+                  Reimprimir
+                </button>
+
+                <button
+                  style={{
+                    ...styles.actionButton,
                     backgroundColor: '#ffc107',
                   }}
                   onClick={() => {
@@ -641,8 +684,7 @@ export default function ComandaPage() {
                     if (!confirmacion) return
 
                     await axios.patch(
-                      `${
-                        import.meta.env.VITE_API_URL_PRODUCTION
+                      `${__API_URL__
                       }/comandas/${idComanda}/cerrar`
                     )
                     alert('Mesa liberada')
